@@ -7,3 +7,4 @@ testnet.json
 .idea/**
 www/tmp/**
 *.exe
+/**/.idea/*
