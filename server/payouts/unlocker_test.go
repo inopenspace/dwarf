@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"bitbucket.org/vdidenko/dwarf/server/rpcver/rpc"
-	"bitbucket.org/vdidenko/dwarf/server/storage"
+	"github.com/vadimDidenko/open-ethereum-pool/server/rpcver/rpc"
+	"github.com/vadimDidenko/open-ethereum-pool/server/storage"
 )
 
 func TestMain(m *testing.M) {

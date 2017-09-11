@@ -13,10 +13,10 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"bitbucket.org/vdidenko/dwarf/server/policy"
-	"bitbucket.org/vdidenko/dwarf/server/rpcver/rpc"
-	"bitbucket.org/vdidenko/dwarf/server/storage"
-	"bitbucket.org/vdidenko/dwarf/server/util"
+	"github.com/vadimDidenko/open-ethereum-pool/server/policy"
+	"github.com/vadimDidenko/open-ethereum-pool/server/rpcver/rpc"
+	"github.com/vadimDidenko/open-ethereum-pool/server/storage"
+	"github.com/vadimDidenko/open-ethereum-pool/server/util"
 )
 
 type ProxyServer struct {

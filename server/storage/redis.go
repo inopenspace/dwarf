@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/redis.v3"
 
-	"bitbucket.org/vdidenko/dwarf/server/util"
+	"github.com/vadimDidenko/open-ethereum-pool/server/util"
 )
 
 type Config struct {

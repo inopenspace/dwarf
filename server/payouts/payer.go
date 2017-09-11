@@ -10,9 +10,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
-	"bitbucket.org/vdidenko/dwarf/server/rpcver/rpc"
-	"bitbucket.org/vdidenko/dwarf/server/storage"
-	"bitbucket.org/vdidenko/dwarf/server/util"
+	"github.com/vadimDidenko/open-ethereum-pool/server/rpcver/rpc"
+	"github.com/vadimDidenko/open-ethereum-pool/server/storage"
+	"github.com/vadimDidenko/open-ethereum-pool/server/util"
 )
 
 const txCheckInterval = 5 * time.Second
