@@ -2,7 +2,7 @@
 
 module.exports = function(environment) {
   var ENV = {
-    modulePrefix: 'open-ethereum-pool',
+    modulePrefix: 'server',
     environment: environment,
     rootURL: '/',
     locationType: 'hash',
@@ -16,14 +16,14 @@ module.exports = function(environment) {
     APP: {
       ApplicationName: "Ethereum Classic",
       // API host and port
-      ApiUrl: '//62.64.98.2/',
+      ApiUrl: '//127.0.0.1/',
 
       // HTTP mining endpoint
-      HttpHost: 'http://62.64.98.2',
+      HttpHost: 'http://127.0.0.1',
       HttpPort: 8888,
 
       // Stratum mining endpoint
-      StratumHost: '62.64.98.2',
+      StratumHost: '127.0.0.1',
       StratumPort: 8008,
 
       // Fee and payout details
@@ -39,7 +39,7 @@ module.exports = function(environment) {
     /* Override ApiUrl just for development, while you are customizing
       frontend markup and css theme on your workstation.
     */
-    ENV.APP.ApiUrl = 'http://62.64.98.2:8080/';
+    ENV.APP.ApiUrl = 'http://127.0.0.1:8080/';
     // ENV.APP.LOG_RESOLVER = true;
     // ENV.APP.LOG_ACTIVE_GENERATION = true;
     // ENV.APP.LOG_TRANSITIONS = true;
