@@ -6,3 +6,4 @@ testnet.json
 /build/bin/
 .idea/**
 www/tmp/**
+*.exe
