@@ -10,9 +10,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/math"
 
-	"github.com/vadimDidenko/open-ethereum-pool/server/rpcver/rpc"
-	"github.com/vadimDidenko/open-ethereum-pool/server/storage"
-	"github.com/vadimDidenko/open-ethereum-pool/server/util"
+	"bitbucket.org/vdidenko/dwarf/server/rpcver/rpc"
+	"bitbucket.org/vdidenko/dwarf/server/storage"
+	"bitbucket.org/vdidenko/dwarf/server/util"
 )
 
 type UnlockerConfig struct {
