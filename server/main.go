@@ -11,10 +11,10 @@ import (
 
 	"github.com/yvasiyarov/gorelic"
 
-	"github.com/vadimDidenko/open-ethereum-pool/server/api"
-	"github.com/vadimDidenko/open-ethereum-pool/server/payouts"
-	"github.com/vadimDidenko/open-ethereum-pool/server/proxy"
-	"github.com/vadimDidenko/open-ethereum-pool/server/storage"
+	"bitbucket.org/vdidenko/dwarf/server/api"
+	"bitbucket.org/vdidenko/dwarf/server/payouts"
+	"bitbucket.org/vdidenko/dwarf/server/proxy"
+	"bitbucket.org/vdidenko/dwarf/server/storage"
 )
 
 var cfg proxy.Config

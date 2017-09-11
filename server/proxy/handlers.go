@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"bitbucket.org/vdidenko/dwarf/server/rpc"
-	"github.com/vadimDidenko/open-ethereum-pool/server/util"
+	"bitbucket.org/vdidenko/dwarf/server/util"
 )
 
 // Allow only lowercase hexadecimal with 0x prefix

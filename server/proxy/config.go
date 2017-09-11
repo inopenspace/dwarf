@@ -1,10 +1,10 @@
 package proxy
 
 import (
-	"github.com/vadimDidenko/open-ethereum-pool/server/api"
-	"github.com/vadimDidenko/open-ethereum-pool/server/payouts"
-	"github.com/vadimDidenko/open-ethereum-pool/server/policy"
-	"github.com/vadimDidenko/open-ethereum-pool/server/storage"
+	"bitbucket.org/vdidenko/dwarf/server/api"
+	"bitbucket.org/vdidenko/dwarf/server/payouts"
+	"bitbucket.org/vdidenko/dwarf/server/policy"
+	"bitbucket.org/vdidenko/dwarf/server/storage"
 )
 
 type Config struct {

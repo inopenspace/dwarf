@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"bitbucket.org/vdidenko/dwarf/server/rpc"
-	"github.com/vadimDidenko/open-ethereum-pool/server/storage"
+	"bitbucket.org/vdidenko/dwarf/server/storage"
 )
 
 func TestMain(m *testing.M) {
