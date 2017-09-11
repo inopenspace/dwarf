@@ -1,10 +1,10 @@
 package proxy
 
 import (
-	"bitbucket.org/vdidenko/dwarf/server/api"
-	"bitbucket.org/vdidenko/dwarf/server/payouts"
-	"bitbucket.org/vdidenko/dwarf/server/policy"
-	"bitbucket.org/vdidenko/dwarf/server/storage"
+	"bitbucket.org/vdidenko/dwarf/api"
+	"bitbucket.org/vdidenko/dwarf/payouts"
+	"bitbucket.org/vdidenko/dwarf/policy"
+	"bitbucket.org/vdidenko/dwarf/storage"
 )
 
 type Config struct {

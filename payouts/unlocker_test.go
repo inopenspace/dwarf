@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"bitbucket.org/vdidenko/dwarf/server/rpc"
-	"bitbucket.org/vdidenko/dwarf/server/storage"
+	"bitbucket.org/vdidenko/dwarf/rpc"
+	"bitbucket.org/vdidenko/dwarf/storage"
 )
 
 func TestMain(m *testing.M) {

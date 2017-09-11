@@ -10,8 +10,8 @@ fi
 # Create fake Go workspace if it doesn't exist yet.
 workspace="$PWD/build/_workspace"
 root="$PWD"
-ethdir="$workspace/src/github.com/vadimDidenko"
-if [ ! -L "$ethdir/open-ethereum-pool" ]; then
+ethdir="$workspace/src/bitbucket.org/vdidenko/"
+if [ ! -L "$ethdir/server" ]; then
     mkdir -p "$ethdir"
     cd "$ethdir"
     ln -s ../../../../../. open-ethereum-pool
@@ -25,8 +25,8 @@ GOBIN="$PWD/build/bin"
 export GOPATH GOBIN
 
 # Run the command inside the workspace.
-cd "$ethdir/open-ethereum-pool"
-PWD="$ethdir/open-ethereum-pool"
+cd "$ethdir/server"
+PWD="$ethdir/dwarf/server"
 
 # Launch the arguments with the configured environment.
 exec "$@"
