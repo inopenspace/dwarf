@@ -14,7 +14,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"bitbucket.org/vdidenko/dwarf/util"
+	"bitbucket.org/vdidenko/dwarf/server/util"
 )
 
 type RPCClient struct {

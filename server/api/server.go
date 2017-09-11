@@ -12,8 +12,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"bitbucket.org/vdidenko/dwarf/storage"
-	"bitbucket.org/vdidenko/dwarf/util"
+	"bitbucket.org/vdidenko/dwarf/server/storage"
+	"bitbucket.org/vdidenko/dwarf/server/util"
 )
 
 type ApiConfig struct {

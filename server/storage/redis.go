@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/redis.v3"
 
-	"bitbucket.org/vdidenko/dwarf/util"
+	"bitbucket.org/vdidenko/dwarf/server/utiler/util"
 )
 
 type Config struct {

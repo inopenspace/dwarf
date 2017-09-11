@@ -9,7 +9,7 @@ import (
 	"net"
 	"time"
 
-	"bitbucket.org/vdidenko/dwarf/util"
+	"bitbucket.org/vdidenko/dwarf/server/util"
 )
 
 const (

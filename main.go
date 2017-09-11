@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"encoding/json"
@@ -11,10 +11,10 @@ import (
 
 	"github.com/yvasiyarov/gorelic"
 
-	"bitbucket.org/vdidenko/dwarf/api"
-	"bitbucket.org/vdidenko/dwarf/payouts"
-	"bitbucket.org/vdidenko/dwarf/proxy"
-	"bitbucket.org/vdidenko/dwarf/storage"
+	"bitbucket.org/vdidenko/dwarf/server/api"
+	"bitbucket.org/vdidenko/dwarf/server/payouts"
+	"bitbucket.org/vdidenko/dwarf/server/proxy"
+	"bitbucket.org/vdidenko/dwarf/server/storage"
 )
 
 var cfg proxy.Config
