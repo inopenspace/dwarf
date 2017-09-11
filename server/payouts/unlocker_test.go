@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"bitbucket.org/vdidenko/dwarf/server/rpcver/rpc"
+	"bitbucket.org/vdidenko/dwarf/server/rpc"
 	"bitbucket.org/vdidenko/dwarf/server/storage"
 )
 
