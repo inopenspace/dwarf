@@ -12,8 +12,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"bitbucket.org/vdidenko/dwarf/server/storage"
-	"bitbucket.org/vdidenko/dwarf/server/util"
+	"github.com/vadimDidenko/open-ethereum-pool/server/storage"
+	"github.com/vadimDidenko/open-ethereum-pool/server/util"
 )
 
 type ApiConfig struct {
