@@ -14,7 +14,7 @@ module.exports = function(environment) {
     },
 
     APP: {
-      ApplicationName: "Ethereum Classic",
+      ApplicationName: "Expanse",
       // API host and port
       ApiUrl: '//127.0.0.1/',
 
