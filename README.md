@@ -56,7 +56,7 @@ Install nodejs. I suggest using LTS version >= 4.x from https://github.com/nodes
 
 The frontend is a single-page Ember.js application that polls the pool API to render miner stats.
 
-    cd www
+    cd ui
 
 Change <code>ApiUrl: '//example.net/'</code> in <code>www/config/environment.js</code> to match your domain name. Also don't forget to adjust other options.
 
