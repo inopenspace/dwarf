@@ -37,17 +37,16 @@ Dependencies:
 First install  [go-ethereum](https://github.com/ethereum/go-ethereum/wiki/Installation-Instructions-for-Ubuntu).
 
 Clone & compile:
-
-    git config --global http.https://gopkg.in.followRedirects true
-    git clone https://github.com/vadimDidenko/open-ethereum-pool.git
-    cd open-ethereum-pool
-    make
+    
+    git clone https://vdidenko@bitbucket.org/vdidenko/dwarf.git
+    cd /dwarf/server
+    go build
 
 Install redis-server.
 
 ### Running Pool
 
-    ./build/bin/open-ethereum-pool config.json
+   server config.json
 
 You can use Ubuntu upstart - check for sample config in <code>upstart.conf</code>.
 
