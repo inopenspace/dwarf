@@ -9,7 +9,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/vadimDidenko/open-ethereum-pool/server/util"
+	"bitbucket.org/vdidenko/dwarf/server/util"
 )
 
 const (
