@@ -16,15 +16,15 @@ module.exports = function(environment) {
     APP: {
       ApplicationName: "Expanse",
       // API host and port
-      ApiUrl: '//127.0.0.1/',
+      ApiUrl: '//big-dwarf.com/',
 
       // HTTP mining endpoint
-      HttpHost: 'http://127.0.0.1',
-      HttpPort: 8888,
+      HttpHost: 'http://big-dwarf.com',
+      HttpPort: 9999,
 
       // Stratum mining endpoint
-      StratumHost: '127.0.0.1',
-      StratumPort: 8008,
+      StratumHost: 'big-dwarf.com',
+      StratumPort: 9009,
 
       // Fee and payout details
       PoolFee: '1%',
@@ -39,7 +39,7 @@ module.exports = function(environment) {
     /* Override ApiUrl just for development, while you are customizing
       frontend markup and css theme on your workstation.
     */
-    ENV.APP.ApiUrl = 'http://127.0.0.1:8080/';
+    ENV.APP.ApiUrl = 'http://big-dwarf.com:9090/';
     // ENV.APP.LOG_RESOLVER = true;
     // ENV.APP.LOG_ACTIVE_GENERATION = true;
     // ENV.APP.LOG_TRANSITIONS = true;
@@ -59,7 +59,7 @@ module.exports = function(environment) {
   }
 
   if (environment === 'production') {
-      console.log("PROD env.");
+    console.log("PROD env.");
   }
 
   return ENV;

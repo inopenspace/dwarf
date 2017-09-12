@@ -12,5 +12,23 @@ export default Ember.Controller.extend({
       }
       return percent;
     }
+  }),
+  roundShares: Ember.computed('stats', 'model', {
+    get() {
+      var percent = this.get('model.roundShares')/1000000000;
+      if (!percent) {
+        return 0;
+      }
+      return percent;
+    }
+  }),
+  allShares: Ember.computed('stats', 'model', {
+    get() {
+      var percent = this.get('stats.roundShares')/1000000000;
+      if (!percent) {
+        return 0;
+      }
+      return percent;
+    }
   })
 });
