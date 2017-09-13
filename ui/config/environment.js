@@ -2,7 +2,7 @@
 
 module.exports = function(environment) {
   var ENV = {
-    modulePrefix: 'server',
+    modulePrefix: 'dwarf',
     environment: environment,
     rootURL: '/',
     locationType: 'hash',
@@ -15,16 +15,17 @@ module.exports = function(environment) {
 
     APP: {
       ApplicationName: "Ethereum Classic",
+      BlockExplorerAddress:"http://www.gander.tech/blocks/",
       // API host and port
-      ApiUrl: '//127.0.0.1/',
+      ApiUrl: '//62.64.98.2/',
 
       // HTTP mining endpoint
-      HttpHost: 'http://127.0.0.1',
-      HttpPort: 8888,
+      HttpHost: 'http://62.64.98.2',
+      HttpPort: 9999,
 
       // Stratum mining endpoint
-      StratumHost: '127.0.0.1',
-      StratumPort: 8008,
+      StratumHost: '62.64.98.2',
+      StratumPort: 9009,
 
       // Fee and payout details
       PoolFee: '1%',
@@ -39,7 +40,7 @@ module.exports = function(environment) {
     /* Override ApiUrl just for development, while you are customizing
       frontend markup and css theme on your workstation.
     */
-    ENV.APP.ApiUrl = 'http://127.0.0.1:8080/';
+    ENV.APP.ApiUrl = 'http://62.64.98.2:9090/';
     // ENV.APP.LOG_RESOLVER = true;
     // ENV.APP.LOG_ACTIVE_GENERATION = true;
     // ENV.APP.LOG_TRANSITIONS = true;
