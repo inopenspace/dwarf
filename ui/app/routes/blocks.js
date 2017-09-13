@@ -3,6 +3,8 @@ import Block from "../models/block";
 import config from '../config/environment';
 
 export default Ember.Route.extend({
+
+
 	model: function() {
     var url = config.APP.ApiUrl + 'api/blocks';
     return Ember.$.getJSON(url).then(function(data) {
@@ -11,6 +13,7 @@ export default Ember.Route.extend({
 					return Block.create(b);
 				});
 			}
+
 			if (data.immature) {
 				data.immature = data.immature.map(function(b) {
 					return Block.create(b);
@@ -21,6 +24,8 @@ export default Ember.Route.extend({
 					return Block.create(b);
 				});
 			}
+			data.BlockExplorerAddress=config.APP.BlockExplorerAddress;
+      console.log(JSON.stringify(data));
 			return data;
     });
 	},
