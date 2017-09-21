@@ -1,8 +1,8 @@
 import Ember from 'ember';
 import Payment from "../models/payment";
 import config from '../config/environment';
-
 export default Ember.Route.extend({
+
 	model: function() {
     var url = config.APP.ApiUrl + 'api/payments';
     return Ember.$.getJSON(url).then(function(data) {

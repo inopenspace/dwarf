@@ -1,4 +1,4 @@
-package main
+package dwarf
 
 import (
 	"encoding/json"
