@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
+	"encoding/json"
 	"github.com/ethereum/go-ethereum/common/math"
 
 	"bitbucket.org/vdidenko/dwarf/server/rpc"
@@ -19,7 +19,6 @@ type UnlockerConfig struct {
 	Enabled        bool    `json:"enabled"`
 	PoolFee        float64 `json:"poolFee"`
 	PoolFeeAddress string  `json:"poolFeeAddress"`
-	Donate         bool    `json:"donate"`
 	Depth          int64   `json:"depth"`
 	ImmatureDepth  int64   `json:"immatureDepth"`
 	KeepTxFees     bool    `json:"keepTxFees"`
@@ -30,12 +29,9 @@ type UnlockerConfig struct {
 
 const minDepth = 16
 
-var constReward = math.MustParseBig256("5000000000000000000")
+var constReward = math.MustParseBig256("314000000000000000000")
 var uncleReward = new(big.Int).Div(constReward, new(big.Int).SetInt64(32))
 
-// Donate 10% from pool fees to developers
-const donationFee = 10.0
-const donationAccount = "0xb85150eb365e7df0941f0cf08235f987ba91506a"
 
 type BlockUnlocker struct {
 	config   *UnlockerConfig
@@ -104,6 +100,12 @@ func (u *BlockUnlocker) unlockCandidates(candidates []*storage.BlockData) (*Unlo
 	// Data row is: "height:nonce:powHash:mixDigest:timestamp:diff:totalShares"
 	for _, candidate := range candidates {
 		orphan := true
+		out, err := json.Marshal(candidate)
+		if err != nil {
+			panic (err)
+		}
+		log.Panicln("Start unlocking")
+		fmt.Println(string(out))
 
 		/* Search for a normal block with wrong height here by traversing 16 blocks back and forward.
 		 * Also we are searching for a block that can include this one as uncle.
@@ -454,13 +456,6 @@ func (u *BlockUnlocker) calculateRewards(block *storage.BlockData) (*big.Rat, *b
 		extraReward := new(big.Rat).SetInt(block.ExtraReward)
 		poolProfit.Add(poolProfit, extraReward)
 		revenue.Add(revenue, extraReward)
-	}
-
-	if u.config.Donate {
-		var donation = new(big.Rat)
-		poolProfit, donation = chargeFee(poolProfit, donationFee)
-		login := strings.ToLower(donationAccount)
-		rewards[login] += weiToShannonInt64(donation)
 	}
 
 	if len(u.config.PoolFeeAddress) != 0 {
