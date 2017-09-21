@@ -11,7 +11,8 @@ import (
 
 	"github.com/yvasiyarov/gorelic"
 
-	"bitbucket.org/vdidenko/dwarf/server/log"
+    log "github.com/dmuth/google-go-log4go"
+
 	"bitbucket.org/vdidenko/dwarf/server/api"
 	"bitbucket.org/vdidenko/dwarf/server/payouts"
 	"bitbucket.org/vdidenko/dwarf/server/proxy"
@@ -57,26 +58,29 @@ func readConfig(cfg *proxy.Config) {
 		configFileName = os.Args[1]
 	}
 	configFileName, _ = filepath.Abs(configFileName)
-	log.Info("Loading config: %v", configFileName)
+
+	log.Infof("Loading config: %v", configFileName)
 
 	configFile, err := os.Open(configFileName)
 	if err != nil {
-		log.Error("File error: ", err.Error())
+		log.Errorf("File error: ", err.Error())
 	}
 	defer configFile.Close()
 	jsonParser := json.NewDecoder(configFile)
 	if err := jsonParser.Decode(&cfg); err != nil {
-		log.Error("Config error: ", err.Error())
+		log.Errorf("Config error: ", err.Error())
 	}
 }
 
 func main() {
+	log.SetLevel(log.InfoLevel)
+	log.SetDisplayTime(true)
 	readConfig(&cfg)
 	rand.Seed(time.Now().UnixNano())
 
 	if cfg.Threads > 0 {
 		runtime.GOMAXPROCS(cfg.Threads)
-		log.Info("Running with %v threads", cfg.Threads)
+		log.Infof("Running with %v threads", cfg.Threads)
 	}
 
 	startNewrelic()
@@ -84,9 +88,9 @@ func main() {
 	backend = storage.NewRedisClient(&cfg.Redis, cfg.Coin)
 	pong, err := backend.Check()
 	if err != nil {
-		log.Info("Can't establish connection to backend: %v", err)
+		log.Infof("Can't establish connection to backend: %v", err)
 	} else {
-		log.Info("Backend check reply: %v", pong)
+		log.Infof("Backend check reply: %v", pong)
 	}
 
 	if cfg.Proxy.Enabled {

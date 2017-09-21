@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
+	log "github.com/dmuth/google-go-log4go"
 	"net"
 	"time"
 
@@ -22,15 +22,15 @@ func (s *ProxyServer) ListenTCP() {
 
 	addr, err := net.ResolveTCPAddr("tcp", s.config.Proxy.Stratum.Listen)
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		log.Errorf("Error: %v", err)
 	}
 	server, err := net.ListenTCP("tcp", addr)
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		log.Errorf("Error: %v", err)
 	}
 	defer server.Close()
 
-	log.Printf("Stratum listening on %s", s.config.Proxy.Stratum.Listen)
+	log.Infof("Stratum listening on %s", s.config.Proxy.Stratum.Listen)
 	var accept = make(chan int, s.config.Proxy.Stratum.MaxConn)
 	n := 0
 
@@ -70,15 +70,15 @@ func (s *ProxyServer) handleTCPClient(cs *Session) error {
 	for {
 		data, isPrefix, err := connbuff.ReadLine()
 		if isPrefix {
-			log.Printf("Socket flood detected from %s", cs.ip)
+			log.Infof("Socket flood detected from %s", cs.ip)
 			s.policy.BanClient(cs.ip)
 			return err
 		} else if err == io.EOF {
-			log.Printf("Client %s disconnected", cs.ip)
+			log.Infof("Client %s disconnected", cs.ip)
 			s.removeSession(cs)
 			break
 		} else if err != nil {
-			log.Printf("Error reading from socket: %v", err)
+			log.Infof("Error reading from socket: %v", err)
 			return err
 		}
 
@@ -87,7 +87,7 @@ func (s *ProxyServer) handleTCPClient(cs *Session) error {
 			err = json.Unmarshal(data, &req)
 			if err != nil {
 				s.policy.ApplyMalformedPolicy(cs.ip)
-				log.Printf("Malformed stratum request from %s: %v", cs.ip, err)
+				log.Infof("Malformed stratum request from %s: %v", cs.ip, err)
 				return err
 			}
 			s.setDeadline(cs.conn)
@@ -107,7 +107,7 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *StratumReq) error {
 		var params []string
 		err := json.Unmarshal(*req.Params, &params)
 		if err != nil {
-			log.Println("Malformed stratum request params from", cs.ip)
+			log.Infof("Malformed stratum request params from", cs.ip)
 			return err
 		}
 		reply, errReply := s.handleLoginRPC(cs, params, req.Worker)
@@ -125,7 +125,7 @@ func (cs *Session) handleTCPMessage(s *ProxyServer, req *StratumReq) error {
 		var params []string
 		err := json.Unmarshal(*req.Params, &params)
 		if err != nil {
-			log.Println("Malformed stratum request params from", cs.ip)
+			log.Infof("Malformed stratum request params from", cs.ip)
 			return err
 		}
 		reply, errReply := s.handleTCPSubmitRPC(cs, req.Worker, params)
@@ -196,7 +196,7 @@ func (s *ProxyServer) broadcastNewJobs() {
 	defer s.sessionsMu.RUnlock()
 
 	count := len(s.sessions)
-	log.Printf("Broadcasting new job to %v stratum miners", count)
+	log.Infof("Broadcasting new job to %v stratum miners", count)
 
 	start := time.Now()
 	bcast := make(chan int, 1024)
@@ -210,12 +210,12 @@ func (s *ProxyServer) broadcastNewJobs() {
 			err := cs.pushNewJob(&reply)
 			<-bcast
 			if err != nil {
-				log.Printf("Job transmit error to %v@%v: %v", cs.login, cs.ip, err)
+				log.Infof("Job transmit error to %v@%v: %v", cs.login, cs.ip, err)
 				s.removeSession(cs)
 			} else {
 				s.setDeadline(cs.conn)
 			}
 		}(m)
 	}
-	log.Printf("Jobs broadcast finished %s", time.Since(start))
+	log.Infof("Jobs broadcast finished %s", time.Since(start))
 }

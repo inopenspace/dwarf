@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	"log"
+	log "github.com/dmuth/google-go-log4go"
 	"regexp"
 	"strings"
 
@@ -29,7 +29,7 @@ func (s *ProxyServer) handleLoginRPC(cs *Session, params []string, id string) (b
 	}
 	cs.login = login
 	s.registerSession(cs)
-	log.Printf("Stratum miner connected %v@%v", login, cs.ip)
+	log.Infof("Stratum miner connected %v@%v", login, cs.ip)
 	return true, nil
 }
 
@@ -59,13 +59,13 @@ func (s *ProxyServer) handleSubmitRPC(cs *Session, login, id string, params []st
 	}
 	if len(params) != 3 {
 		s.policy.ApplyMalformedPolicy(cs.ip)
-		log.Printf("Malformed params from %s@%s %v", login, cs.ip, params)
+		log.Infof("Malformed params from %s@%s %v", login, cs.ip, params)
 		return false, &ErrorReply{Code: -1, Message: "Invalid params"}
 	}
 
 	if !noncePattern.MatchString(params[0]) || !hashPattern.MatchString(params[1]) || !hashPattern.MatchString(params[2]) {
 		s.policy.ApplyMalformedPolicy(cs.ip)
-		log.Printf("Malformed PoW result from %s@%s %v", login, cs.ip, params)
+		log.Infof("Malformed PoW result from %s@%s %v", login, cs.ip, params)
 		return false, &ErrorReply{Code: -1, Message: "Malformed PoW result"}
 	}
 	t := s.currentBlockTemplate()
@@ -73,19 +73,19 @@ func (s *ProxyServer) handleSubmitRPC(cs *Session, login, id string, params []st
 	ok := s.policy.ApplySharePolicy(cs.ip, !exist && validShare)
 
 	if exist {
-		log.Printf("Duplicate share from %s@%s %v", login, cs.ip, params)
+		log.Infof("Duplicate share from %s@%s %v", login, cs.ip, params)
 		return false, &ErrorReply{Code: 22, Message: "Duplicate share"}
 	}
 
 	if !validShare {
-		log.Printf("Invalid share from %s@%s", login, cs.ip)
+		log.Infof("Invalid share from %s@%s", login, cs.ip)
 		// Bad shares limit reached, return error and close
 		if !ok {
 			return false, &ErrorReply{Code: 23, Message: "Invalid share"}
 		}
 		return false, nil
 	}
-	log.Printf("Valid share from %s@%s", login, cs.ip)
+	log.Infof("Valid share from %s@%s", login, cs.ip)
 
 	if !ok {
 		return true, &ErrorReply{Code: -1, Message: "High rate of invalid shares"}
@@ -103,7 +103,7 @@ func (s *ProxyServer) handleGetBlockByNumberRPC() *rpc.GetBlockReplyPart {
 }
 
 func (s *ProxyServer) handleUnknownRPC(cs *Session, m string) *ErrorReply {
-	log.Printf("Unknown request method %s from %s", m, cs.ip)
+	log.Infof("Unknown request method %s from %s", m, cs.ip)
 	s.policy.ApplyMalformedPolicy(cs.ip)
 	return &ErrorReply{Code: -3, Message: "Method not found"}
 }

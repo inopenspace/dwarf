@@ -2,7 +2,7 @@ package payouts
 
 import (
 	"fmt"
-	"log"
+	log "github.com/dmuth/google-go-log4go"
 	"math/big"
 	"strconv"
 	"strings"
@@ -43,13 +43,13 @@ type BlockUnlocker struct {
 
 func NewBlockUnlocker(cfg *UnlockerConfig, backend *storage.RedisClient) *BlockUnlocker {
 	if len(cfg.PoolFeeAddress) != 0 && !util.IsValidHexAddress(cfg.PoolFeeAddress) {
-		log.Fatalln("Invalid poolFeeAddress", cfg.PoolFeeAddress)
+		log.Errorf("Invalid poolFeeAddress", cfg.PoolFeeAddress)
 	}
 	if cfg.Depth < minDepth*2 {
-		log.Fatalf("Block maturity depth can't be < %v, your depth is %v", minDepth*2, cfg.Depth)
+		log.Errorf("Block maturity depth can't be < %v, your depth is %v", minDepth*2, cfg.Depth)
 	}
 	if cfg.ImmatureDepth < minDepth {
-		log.Fatalf("Immature depth can't be < %v, your depth is %v", minDepth, cfg.ImmatureDepth)
+		log.Errorf("Immature depth can't be < %v, your depth is %v", minDepth, cfg.ImmatureDepth)
 	}
 	u := &BlockUnlocker{config: cfg, backend: backend}
 	u.rpc = rpc.NewRPCClient("BlockUnlocker", cfg.Daemon, cfg.Timeout)
@@ -57,10 +57,10 @@ func NewBlockUnlocker(cfg *UnlockerConfig, backend *storage.RedisClient) *BlockU
 }
 
 func (u *BlockUnlocker) Start() {
-	log.Println("Starting block unlocker")
+	log.Info("Starting block unlocker")
 	intv := util.MustParseDuration(u.config.Interval)
 	timer := time.NewTimer(intv)
-	log.Printf("Set block unlock interval to %v", intv)
+	log.Infof("Set block unlock interval to %v", intv)
 
 	// Immediately unlock after start
 	u.unlockPendingBlocks()
@@ -104,7 +104,7 @@ func (u *BlockUnlocker) unlockCandidates(candidates []*storage.BlockData) (*Unlo
 		if err != nil {
 			panic (err)
 		}
-		log.Panicln("Start unlocking")
+		log.Warn("Start unlocking")
 		fmt.Println(string(out))
 
 		/* Search for a normal block with wrong height here by traversing 16 blocks back and forward.
@@ -114,7 +114,7 @@ func (u *BlockUnlocker) unlockCandidates(candidates []*storage.BlockData) (*Unlo
 			height := candidate.Height + i
 			block, err := u.rpc.GetBlockByHeight(height)
 			if err != nil {
-				log.Printf("Error while retrieving block %v from node: %v", height, err)
+				log.Infof("Error while retrieving block %v from node: %v", height, err)
 				return nil, err
 			}
 			if block == nil {
@@ -132,7 +132,7 @@ func (u *BlockUnlocker) unlockCandidates(candidates []*storage.BlockData) (*Unlo
 					return nil, err
 				}
 				result.maturedBlocks = append(result.maturedBlocks, candidate)
-				log.Printf("Mature block %v with %v tx, hash: %v", candidate.Height, len(block.Transactions), candidate.Hash[0:10])
+				log.Infof("Mature block %v with %v tx, hash: %v", candidate.Height, len(block.Transactions), candidate.Hash[0:10])
 				break
 			}
 
@@ -162,7 +162,7 @@ func (u *BlockUnlocker) unlockCandidates(candidates []*storage.BlockData) (*Unlo
 						return nil, err
 					}
 					result.maturedBlocks = append(result.maturedBlocks, candidate)
-					log.Printf("Mature uncle %v/%v of reward %v with hash: %v", candidate.Height, candidate.UncleHeight,
+					log.Infof("Mature uncle %v/%v of reward %v with hash: %v", candidate.Height, candidate.UncleHeight,
 						util.FormatReward(candidate.Reward), uncle.Hash[0:10])
 					break
 				}
@@ -177,7 +177,7 @@ func (u *BlockUnlocker) unlockCandidates(candidates []*storage.BlockData) (*Unlo
 			result.orphans++
 			candidate.Orphan = true
 			result.orphanedBlocks = append(result.orphanedBlocks, candidate)
-			log.Printf("Orphaned block %v:%v", candidate.RoundHeight, candidate.Nonce)
+			log.Warnf("Orphaned block %v:%v", candidate.RoundHeight, candidate.Nonce)
 		}
 	}
 	return result, nil
@@ -246,7 +246,7 @@ func handleUncle(height int64, uncle *rpc.GetBlockReply, candidate *storage.Bloc
 
 func (u *BlockUnlocker) unlockPendingBlocks() {
 	if u.halt {
-		log.Println("Unlocking suspended due to last critical error:", u.lastFail)
+		log.Warnf("Unlocking suspended due to last critical error:", u.lastFail)
 		return
 	}
 
@@ -254,14 +254,14 @@ func (u *BlockUnlocker) unlockPendingBlocks() {
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
-		log.Printf("Unable to get current blockchain height from node: %v", err)
+		log.Errorf("Unable to get current blockchain height from node: %v", err)
 		return
 	}
 	currentHeight, err := strconv.ParseInt(strings.Replace(current.Number, "0x", "", -1), 16, 64)
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
-		log.Printf("Can't parse pending block number: %v", err)
+		log.Errorf("Can't parse pending block number: %v", err)
 		return
 	}
 
@@ -269,12 +269,12 @@ func (u *BlockUnlocker) unlockPendingBlocks() {
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
-		log.Printf("Failed to get block candidates from backend: %v", err)
+		log.Errorf("Failed to get block candidates from backend: %v", err)
 		return
 	}
 
 	if len(candidates) == 0 {
-		log.Println("No block candidates to unlock")
+		log.Warn("No block candidates to unlock")
 		return
 	}
 
@@ -282,19 +282,19 @@ func (u *BlockUnlocker) unlockPendingBlocks() {
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
-		log.Printf("Failed to unlock blocks: %v", err)
+		log.Errorf("Failed to unlock blocks: %v", err)
 		return
 	}
-	log.Printf("Immature %v blocks, %v uncles, %v orphans", result.blocks, result.uncles, result.orphans)
+	log.Infof("Immature %v blocks, %v uncles, %v orphans", result.blocks, result.uncles, result.orphans)
 
 	err = u.backend.WritePendingOrphans(result.orphanedBlocks)
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
-		log.Printf("Failed to insert orphaned blocks into backend: %v", err)
+		log.Errorf("Failed to insert orphaned blocks into backend: %v", err)
 		return
 	} else {
-		log.Printf("Inserted %v orphaned blocks to backend", result.orphans)
+		log.Infof("Inserted %v orphaned blocks to backend", result.orphans)
 	}
 
 	totalRevenue := new(big.Rat)
@@ -306,14 +306,14 @@ func (u *BlockUnlocker) unlockPendingBlocks() {
 		if err != nil {
 			u.halt = true
 			u.lastFail = err
-			log.Printf("Failed to calculate rewards for round %v: %v", block.RoundKey(), err)
+			log.Errorf("Failed to calculate rewards for round %v: %v", block.RoundKey(), err)
 			return
 		}
 		err = u.backend.WriteImmatureBlock(block, roundRewards)
 		if err != nil {
 			u.halt = true
 			u.lastFail = err
-			log.Printf("Failed to credit rewards for round %v: %v", block.RoundKey(), err)
+			log.Errorf("Failed to credit rewards for round %v: %v", block.RoundKey(), err)
 			return
 		}
 		totalRevenue.Add(totalRevenue, revenue)
@@ -331,10 +331,10 @@ func (u *BlockUnlocker) unlockPendingBlocks() {
 		for login, reward := range roundRewards {
 			entries = append(entries, fmt.Sprintf("\tREWARD %v: %v: %v Shannon", block.RoundKey(), login, reward))
 		}
-		log.Println(strings.Join(entries, "\n"))
+		log.Warnf(strings.Join(entries, "\n"))
 	}
 
-	log.Printf(
+	log.Infof(
 		"IMMATURE SESSION: revenue %v, miners profit %v, pool profit: %v",
 		util.FormatRatReward(totalRevenue),
 		util.FormatRatReward(totalMinersProfit),
@@ -344,7 +344,7 @@ func (u *BlockUnlocker) unlockPendingBlocks() {
 
 func (u *BlockUnlocker) unlockAndCreditMiners() {
 	if u.halt {
-		log.Println("Unlocking suspended due to last critical error:", u.lastFail)
+		log.Warnf("Unlocking suspended due to last critical error:", u.lastFail)
 		return
 	}
 
@@ -352,14 +352,14 @@ func (u *BlockUnlocker) unlockAndCreditMiners() {
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
-		log.Printf("Unable to get current blockchain height from node: %v", err)
+		log.Errorf("Unable to get current blockchain height from node: %v", err)
 		return
 	}
 	currentHeight, err := strconv.ParseInt(strings.Replace(current.Number, "0x", "", -1), 16, 64)
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
-		log.Printf("Can't parse pending block number: %v", err)
+		log.Errorf("Can't parse pending block number: %v", err)
 		return
 	}
 
@@ -367,12 +367,12 @@ func (u *BlockUnlocker) unlockAndCreditMiners() {
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
-		log.Printf("Failed to get block candidates from backend: %v", err)
+		log.Errorf("Failed to get block candidates from backend: %v", err)
 		return
 	}
 
 	if len(immature) == 0 {
-		log.Println("No immature blocks to credit miners")
+		log.Warn("No immature blocks to credit miners")
 		return
 	}
 
@@ -380,21 +380,21 @@ func (u *BlockUnlocker) unlockAndCreditMiners() {
 	if err != nil {
 		u.halt = true
 		u.lastFail = err
-		log.Printf("Failed to unlock blocks: %v", err)
+		log.Errorf("Failed to unlock blocks: %v", err)
 		return
 	}
-	log.Printf("Unlocked %v blocks, %v uncles, %v orphans", result.blocks, result.uncles, result.orphans)
+	log.Infof("Unlocked %v blocks, %v uncles, %v orphans", result.blocks, result.uncles, result.orphans)
 
 	for _, block := range result.orphanedBlocks {
 		err = u.backend.WriteOrphan(block)
 		if err != nil {
 			u.halt = true
 			u.lastFail = err
-			log.Printf("Failed to insert orphaned block into backend: %v", err)
+			log.Errorf("Failed to insert orphaned block into backend: %v", err)
 			return
 		}
 	}
-	log.Printf("Inserted %v orphaned blocks to backend", result.orphans)
+	log.Infof("Inserted %v orphaned blocks to backend", result.orphans)
 
 	totalRevenue := new(big.Rat)
 	totalMinersProfit := new(big.Rat)
@@ -405,14 +405,14 @@ func (u *BlockUnlocker) unlockAndCreditMiners() {
 		if err != nil {
 			u.halt = true
 			u.lastFail = err
-			log.Printf("Failed to calculate rewards for round %v: %v", block.RoundKey(), err)
+			log.Errorf("Failed to calculate rewards for round %v: %v", block.RoundKey(), err)
 			return
 		}
 		err = u.backend.WriteMaturedBlock(block, roundRewards)
 		if err != nil {
 			u.halt = true
 			u.lastFail = err
-			log.Printf("Failed to credit rewards for round %v: %v", block.RoundKey(), err)
+			log.Errorf("Failed to credit rewards for round %v: %v", block.RoundKey(), err)
 			return
 		}
 		totalRevenue.Add(totalRevenue, revenue)
@@ -430,10 +430,10 @@ func (u *BlockUnlocker) unlockAndCreditMiners() {
 		for login, reward := range roundRewards {
 			entries = append(entries, fmt.Sprintf("\tREWARD %v: %v: %v Shannon", block.RoundKey(), login, reward))
 		}
-		log.Println(strings.Join(entries, "\n"))
+		log.Info(strings.Join(entries, "\n"))
 	}
 
-	log.Printf(
+	log.Infof(
 		"MATURE SESSION: revenue %v, miners profit %v, pool profit: %v",
 		util.FormatRatReward(totalRevenue),
 		util.FormatRatReward(totalMinersProfit),

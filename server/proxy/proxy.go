@@ -3,7 +3,7 @@ package proxy
 import (
 	"encoding/json"
 	"io"
-	"log"
+	log "github.com/dmuth/google-go-log4go"
 	"net"
 	"net/http"
 	"strings"
@@ -48,7 +48,7 @@ type Session struct {
 
 func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 	if len(cfg.Name) == 0 {
-		log.Fatal("You must set instance name")
+		log.Error("You must set instance name")
 	}
 	policy := policy.Start(&cfg.Proxy.Policy, backend)
 
@@ -58,9 +58,9 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 	proxy.upstreams = make([]*rpc.RPCClient, len(cfg.Upstream))
 	for i, v := range cfg.Upstream {
 		proxy.upstreams[i] = rpc.NewRPCClient(v.Name, v.Url, v.Timeout)
-		log.Printf("Upstream: %s => %s", v.Name, v.Url)
+		log.Infof("Upstream: %s => %s", v.Name, v.Url)
 	}
-	log.Printf("Default upstream: %s => %s", proxy.rpc().Name, proxy.rpc().Url)
+	log.Infof("Default upstream: %s => %s", proxy.rpc().Name, proxy.rpc().Url)
 
 	if cfg.Proxy.Stratum.Enabled {
 		proxy.sessions = make(map[*Session]struct{})
@@ -73,7 +73,7 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 
 	refreshIntv := util.MustParseDuration(cfg.Proxy.BlockRefreshInterval)
 	refreshTimer := time.NewTimer(refreshIntv)
-	log.Printf("Set block refresh every %v", refreshIntv)
+	log.Infof("Set block refresh every %v", refreshIntv)
 
 	checkIntv := util.MustParseDuration(cfg.UpstreamCheckInterval)
 	checkTimer := time.NewTimer(checkIntv)
@@ -109,7 +109,7 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 				if t != nil {
 					err := backend.WriteNodeState(cfg.Name, t.Height, t.Difficulty)
 					if err != nil {
-						log.Printf("Failed to write node state to backend: %v", err)
+						log.Errorf("Failed to write node state to backend: %v", err)
 						proxy.markSick()
 					} else {
 						proxy.markOk()
@@ -124,7 +124,7 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 }
 
 func (s *ProxyServer) Start() {
-	log.Printf("Starting proxy on %v", s.config.Proxy.Listen)
+	log.Infof("Starting proxy on %v", s.config.Proxy.Listen)
 	r := mux.NewRouter()
 	r.Handle("/{login:0x[0-9a-fA-F]{40}}/{id:[0-9a-zA-Z-_]{1,8}}", s)
 	r.Handle("/{login:0x[0-9a-fA-F]{40}}", s)
@@ -135,7 +135,7 @@ func (s *ProxyServer) Start() {
 	}
 	err := srv.ListenAndServe()
 	if err != nil {
-		log.Fatalf("Failed to start proxy: %v", err)
+		log.Errorf("Failed to start proxy: %v", err)
 	}
 }
 
@@ -156,7 +156,7 @@ func (s *ProxyServer) checkUpstreams() {
 	}
 
 	if s.upstream != candidate {
-		log.Printf("Switching to %v upstream", s.upstreams[candidate].Name)
+		log.Infof("Switching to %v upstream", s.upstreams[candidate].Name)
 		atomic.StoreInt32(&s.upstream, candidate)
 	}
 }
@@ -185,7 +185,7 @@ func (s *ProxyServer) remoteAddr(r *http.Request) string {
 
 func (s *ProxyServer) handleClient(w http.ResponseWriter, r *http.Request, ip string) {
 	if r.ContentLength > s.config.Proxy.LimitBodySize {
-		log.Printf("Socket flood from %s", ip)
+		log.Warnf("Socket flood from %s", ip)
 		s.policy.ApplyMalformedPolicy(ip)
 		http.Error(w, "Request too large", http.StatusExpectationFailed)
 		return
@@ -200,7 +200,7 @@ func (s *ProxyServer) handleClient(w http.ResponseWriter, r *http.Request, ip st
 		if err := dec.Decode(&req); err == io.EOF {
 			break
 		} else if err != nil {
-			log.Printf("Malformed request from %v: %v", ip, err)
+			log.Warnf("Malformed request from %v: %v", ip, err)
 			s.policy.ApplyMalformedPolicy(ip)
 			return
 		}
@@ -210,7 +210,7 @@ func (s *ProxyServer) handleClient(w http.ResponseWriter, r *http.Request, ip st
 
 func (cs *Session) handleMessage(s *ProxyServer, r *http.Request, req *JSONRpcReq) {
 	if req.Id == nil {
-		log.Printf("Missing RPC id from %s", cs.ip)
+		log.Infof("Missing RPC id from %s", cs.ip)
 		s.policy.ApplyMalformedPolicy(cs.ip)
 		return
 	}
@@ -243,7 +243,7 @@ func (cs *Session) handleMessage(s *ProxyServer, r *http.Request, req *JSONRpcRe
 			var params []string
 			err := json.Unmarshal(*req.Params, &params)
 			if err != nil {
-				log.Printf("Unable to parse params from %v", cs.ip)
+				log.Infof("Unable to parse params from %v", cs.ip)
 				s.policy.ApplyMalformedPolicy(cs.ip)
 				break
 			}
