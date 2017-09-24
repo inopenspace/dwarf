@@ -7,11 +7,11 @@ html {
 body {
   /* Margin bottom by footer height */
   margin-bottom: 60px;
-  background-color: #F0F1EC;
+  background-color: #e9ebee;
 }
 .btn-primary{
-  background-color:  #A0C263;
-  border-color: #A0C263;
+  background-color: #4267b2;
+  border-color: #4267b2;
 }
 .footer {
   position: absolute;
@@ -57,8 +57,8 @@ code {
 }
 
 .navbar-default {
-	background-color: #04191f;
-	border-color: #69102b;
+	background-color: #4267b2;
+	border-color: #4267b2;
 }
 .navbar-default .navbar-brand {
 	color: #dadada;
@@ -84,7 +84,10 @@ code {
 	background-color: #A0C263;
 }
 .navbar-default .navbar-toggle {
-	border-color: #A0C263;
+	border-color: #4267b2;
+}
+.navbar-default .navbar-toggle {
+	float: none;
 }
 .navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
 	background-color: #A0C263;
@@ -118,7 +121,7 @@ code {
 
 span.logo-1 {
 	font-weight: 700;
-	color: #517b07;
+	color: #e9ebee;
 }
 
 span.logo-2 {
