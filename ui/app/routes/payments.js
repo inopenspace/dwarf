@@ -10,6 +10,7 @@ export default Ember.Route.extend({
 				data.payments = data.payments.map(function(p) {
 					return Payment.create(p);
 				});
+        data.config = config;
 			}
 			return data;
     });

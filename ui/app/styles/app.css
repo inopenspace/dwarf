@@ -27,6 +27,9 @@ body {
 -------------------------------------------------- */
 /* Not required for template or sticky footer method. */
 
+.label-success {
+  background-color: #A0C263;
+}
 body {
   padding-top: 20px;
   padding-bottom: 5px;
@@ -90,7 +93,7 @@ code {
 	float: none;
 }
 .navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
-	background-color: #A0C263;
+	background-color: #4267b2;
 }
 .navbar-default .navbar-toggle .icon-bar {
 	background-color: #dadada;
