@@ -6,6 +6,7 @@ export default Ember.Route.extend({
 		var url = config.APP.ApiUrl + 'api/accounts/' + params.login;
     return Ember.$.getJSON(url).then(function(data) {
       data.login = params.login;
+      data.config = config;
       return Ember.Object.create(data);
     });
 	},
