@@ -15,77 +15,93 @@ var hashPattern = regexp.MustCompile("^0x[0-9a-f]{64}$")
 var workerPattern = regexp.MustCompile("^[0-9a-zA-Z-_]{1,8}$")
 
 // Stratum
-func (s *ProxyServer) handleLoginRPC(cs *Session, params []string, id string) (bool, *ErrorReply) {
+func (proxyServer *ProxyServer) handleLoginRPC(clintSession *Session, params []string, workerId string) (bool, *ErrorReply) {
 	if len(params) == 0 {
 		return false, &ErrorReply{Code: -1, Message: "Invalid params"}
 	}
 
 	login := strings.ToLower(params[0])
+	//If login contain information about workers name "walletId.workerName"
+	if strings.Contains(login, ".") {
+		var loginParams = strings.Split(login, ".")
+		login = loginParams[0]
+		workerId = loginParams[1]
+	}
+	if strings.Contains(login, "/") {
+		var loginParams = strings.Split(login, "/")
+		login = loginParams[0]
+		workerId = loginParams[1]
+	}
 	if !util.IsValidHexAddress(login) {
 		return false, &ErrorReply{Code: -1, Message: "Invalid login"}
 	}
-	if !s.policy.ApplyLoginPolicy(login, cs.ip) {
+	if !proxyServer.policy.ApplyLoginPolicy(login, clintSession.ip) {
 		return false, &ErrorReply{Code: -1, Message: "You are blacklisted"}
 	}
-	cs.login = login
-	s.registerSession(cs)
-	log.Infof("Stratum miner connected %v@%v", login, cs.ip)
+
+	if !workerPattern.MatchString(workerId) {
+		workerId = "0"
+	}
+
+	clintSession.login = login
+	clintSession.worker = workerId
+
+	proxyServer.registerSession(clintSession)
+	log.Infof("Stratum miner connected %v@%v.%v", login, clintSession.ip, clintSession.worker)
 	return true, nil
 }
 
-func (s *ProxyServer) handleGetWorkRPC(cs *Session) ([]string, *ErrorReply) {
-	t := s.currentBlockTemplate()
-	if t == nil || len(t.Header) == 0 || s.isSick() {
+func (proxyServer *ProxyServer) handleGetWorkRPC(clintSession *Session) ([]string, *ErrorReply) {
+	blockTemplate := proxyServer.currentBlockTemplate()
+	if blockTemplate == nil || len(blockTemplate.Header) == 0 || proxyServer.isSick() {
 		return nil, &ErrorReply{Code: 0, Message: "Work not ready"}
 	}
-	return []string{t.Header, t.Seed, s.diff}, nil
+	return []string{blockTemplate.Header, blockTemplate.Seed, proxyServer.diff}, nil
 }
 
 // Stratum
-func (s *ProxyServer) handleTCPSubmitRPC(cs *Session, id string, params []string) (bool, *ErrorReply) {
-	s.sessionsMu.RLock()
-	_, ok := s.sessions[cs]
-	s.sessionsMu.RUnlock()
+func (proxyServer *ProxyServer) handleTCPSubmitRPC(clintSession *Session, params []string) (bool, *ErrorReply) {
+	proxyServer.sessionsMu.RLock()
+	_, ok := proxyServer.sessions[clintSession]
+	proxyServer.sessionsMu.RUnlock()
 
 	if !ok {
 		return false, &ErrorReply{Code: 25, Message: "Not subscribed"}
 	}
-	return s.handleSubmitRPC(cs, cs.login, id, params)
+	return proxyServer.handleSubmitRPC(clintSession, params)
 }
 
-func (s *ProxyServer) handleSubmitRPC(cs *Session, login, id string, params []string) (bool, *ErrorReply) {
-	if !workerPattern.MatchString(id) {
-		id = "0"
-	}
+func (proxyServer *ProxyServer) handleSubmitRPC(clintSession *Session, params []string) (bool, *ErrorReply) {
+
 	if len(params) != 3 {
-		s.policy.ApplyMalformedPolicy(cs.ip)
-		log.Infof("Malformed params from %s@%s %v", login, cs.ip, params)
+		proxyServer.policy.ApplyMalformedPolicy(clintSession.ip)
+		log.Infof("Malformed params from %s@%s %v", clintSession.login, clintSession.ip, params)
 		return false, &ErrorReply{Code: -1, Message: "Invalid params"}
 	}
 
 	if !noncePattern.MatchString(params[0]) || !hashPattern.MatchString(params[1]) || !hashPattern.MatchString(params[2]) {
-		s.policy.ApplyMalformedPolicy(cs.ip)
-		log.Infof("Malformed PoW result from %s@%s %v", login, cs.ip, params)
+		proxyServer.policy.ApplyMalformedPolicy(clintSession.ip)
+		log.Infof("Malformed PoW result from %s@%s %v", clintSession.login, clintSession.ip, params)
 		return false, &ErrorReply{Code: -1, Message: "Malformed PoW result"}
 	}
-	t := s.currentBlockTemplate()
-	exist, validShare := s.processShare(login, id, cs.ip, t, params)
-	ok := s.policy.ApplySharePolicy(cs.ip, !exist && validShare)
+	t := proxyServer.currentBlockTemplate()
+	exist, validShare := proxyServer.processShare(clintSession.login, clintSession.worker, clintSession.ip, t, params)
+	ok := proxyServer.policy.ApplySharePolicy(clintSession.ip, !exist && validShare)
 
 	if exist {
-		log.Infof("Duplicate share from %s@%s %v", login, cs.ip, params)
+		log.Infof("Duplicate share from %s@%s %v", clintSession.login, clintSession.ip, params)
 		return false, &ErrorReply{Code: 22, Message: "Duplicate share"}
 	}
 
 	if !validShare {
-		log.Infof("Invalid share from %s@%s", login, cs.ip)
+		log.Infof("Invalid share from %s@%s", clintSession.login, clintSession.ip)
 		// Bad shares limit reached, return error and close
 		if !ok {
 			return false, &ErrorReply{Code: 23, Message: "Invalid share"}
 		}
 		return false, nil
 	}
-	log.Infof("Valid share from %s@%s", login, cs.ip)
+	log.Infof("Valid share from %s@%s", clintSession.login, clintSession.ip)
 
 	if !ok {
 		return true, &ErrorReply{Code: -1, Message: "High rate of invalid shares"}
@@ -93,8 +109,8 @@ func (s *ProxyServer) handleSubmitRPC(cs *Session, login, id string, params []st
 	return true, nil
 }
 
-func (s *ProxyServer) handleGetBlockByNumberRPC() *rpc.GetBlockReplyPart {
-	t := s.currentBlockTemplate()
+func (proxyServer *ProxyServer) handleGetBlockByNumberRPC() *rpc.GetBlockReplyPart {
+	t := proxyServer.currentBlockTemplate()
 	var reply *rpc.GetBlockReplyPart
 	if t != nil {
 		reply = t.GetPendingBlockCache
@@ -102,8 +118,8 @@ func (s *ProxyServer) handleGetBlockByNumberRPC() *rpc.GetBlockReplyPart {
 	return reply
 }
 
-func (s *ProxyServer) handleUnknownRPC(cs *Session, m string) *ErrorReply {
-	log.Infof("Unknown request method %s from %s", m, cs.ip)
-	s.policy.ApplyMalformedPolicy(cs.ip)
+func (proxyServer *ProxyServer) handleUnknownRPC(clintSession *Session, methodName string) *ErrorReply {
+	log.Infof("Unknown request method %s from %s", methodName, clintSession.ip)
+	proxyServer.policy.ApplyMalformedPolicy(clintSession.ip)
 	return &ErrorReply{Code: -3, Message: "Method not found"}
 }

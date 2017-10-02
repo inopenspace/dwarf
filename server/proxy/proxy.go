@@ -44,6 +44,7 @@ type Session struct {
 	sync.Mutex
 	conn  *net.TCPConn
 	login string
+	worker string
 }
 
 func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
@@ -123,15 +124,15 @@ func NewProxy(cfg *Config, backend *storage.RedisClient) *ProxyServer {
 	return proxy
 }
 
-func (s *ProxyServer) Start() {
-	log.Infof("Starting proxy on %v", s.config.Proxy.Listen)
+func (proxyServer *ProxyServer) Start() {
+	log.Infof("Starting proxy on %v", proxyServer.config.Proxy.Listen)
 	r := mux.NewRouter()
-	r.Handle("/{login:0x[0-9a-fA-F]{40}}/{id:[0-9a-zA-Z-_]{1,8}}", s)
-	r.Handle("/{login:0x[0-9a-fA-F]{40}}", s)
+	r.Handle("/{login:0x[0-9a-fA-F]{40}}/{id:[0-9a-zA-Z-_]{1,8}}", proxyServer)
+	r.Handle("/{login:0x[0-9a-fA-F]{40}}", proxyServer)
 	srv := &http.Server{
-		Addr:           s.config.Proxy.Listen,
+		Addr:           proxyServer.config.Proxy.Listen,
 		Handler:        r,
-		MaxHeaderBytes: s.config.Proxy.LimitHeadersSize,
+		MaxHeaderBytes: proxyServer.config.Proxy.LimitHeadersSize,
 	}
 	err := srv.ListenAndServe()
 	if err != nil {
@@ -139,41 +140,41 @@ func (s *ProxyServer) Start() {
 	}
 }
 
-func (s *ProxyServer) rpc() *rpc.RPCClient {
-	i := atomic.LoadInt32(&s.upstream)
-	return s.upstreams[i]
+func (proxyServer *ProxyServer) rpc() *rpc.RPCClient {
+	i := atomic.LoadInt32(&proxyServer.upstream)
+	return proxyServer.upstreams[i]
 }
 
-func (s *ProxyServer) checkUpstreams() {
+func (proxyServer *ProxyServer) checkUpstreams() {
 	candidate := int32(0)
 	backup := false
 
-	for i, v := range s.upstreams {
+	for i, v := range proxyServer.upstreams {
 		if v.Check() && !backup {
 			candidate = int32(i)
 			backup = true
 		}
 	}
 
-	if s.upstream != candidate {
-		log.Infof("Switching to %v upstream", s.upstreams[candidate].Name)
-		atomic.StoreInt32(&s.upstream, candidate)
+	if proxyServer.upstream != candidate {
+		log.Infof("Switching to %v upstream", proxyServer.upstreams[candidate].Name)
+		atomic.StoreInt32(&proxyServer.upstream, candidate)
 	}
 }
 
-func (s *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (proxyServer *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		s.writeError(w, 405, "rpc: POST method required, received "+r.Method)
+		proxyServer.writeError(w, 405, "rpc: POST method required, received "+r.Method)
 		return
 	}
-	ip := s.remoteAddr(r)
-	if !s.policy.IsBanned(ip) {
-		s.handleClient(w, r, ip)
+	ip := proxyServer.remoteAddr(r)
+	if !proxyServer.policy.IsBanned(ip) {
+		proxyServer.handleClient(w, r, ip)
 	}
 }
 
-func (s *ProxyServer) remoteAddr(r *http.Request) string {
-	if s.config.Proxy.BehindReverseProxy {
+func (proxyServer *ProxyServer) remoteAddr(r *http.Request) string {
+	if proxyServer.config.Proxy.BehindReverseProxy {
 		ip := r.Header.Get("X-Forwarded-For")
 		if len(ip) > 0 && net.ParseIP(ip) != nil {
 			return ip
@@ -183,14 +184,14 @@ func (s *ProxyServer) remoteAddr(r *http.Request) string {
 	return ip
 }
 
-func (s *ProxyServer) handleClient(w http.ResponseWriter, r *http.Request, ip string) {
-	if r.ContentLength > s.config.Proxy.LimitBodySize {
+func (proxyServer *ProxyServer) handleClient(w http.ResponseWriter, r *http.Request, ip string) {
+	if r.ContentLength > proxyServer.config.Proxy.LimitBodySize {
 		log.Warnf("Socket flood from %s", ip)
-		s.policy.ApplyMalformedPolicy(ip)
+		proxyServer.policy.ApplyMalformedPolicy(ip)
 		http.Error(w, "Request too large", http.StatusExpectationFailed)
 		return
 	}
-	r.Body = http.MaxBytesReader(w, r.Body, s.config.Proxy.LimitBodySize)
+	r.Body = http.MaxBytesReader(w, r.Body, proxyServer.config.Proxy.LimitBodySize)
 	defer r.Body.Close()
 
 	cs := &Session{ip: ip, enc: json.NewEncoder(w)}
@@ -201,17 +202,17 @@ func (s *ProxyServer) handleClient(w http.ResponseWriter, r *http.Request, ip st
 			break
 		} else if err != nil {
 			log.Warnf("Malformed request from %v: %v", ip, err)
-			s.policy.ApplyMalformedPolicy(ip)
+			proxyServer.policy.ApplyMalformedPolicy(ip)
 			return
 		}
-		cs.handleMessage(s, r, &req)
+		cs.handleMessage(proxyServer, r, &req)
 	}
 }
 
-func (cs *Session) handleMessage(s *ProxyServer, r *http.Request, req *JSONRpcReq) {
+func (clintSession *Session) handleMessage(s *ProxyServer, r *http.Request, req *JSONRpcReq) {
 	if req.Id == nil {
-		log.Infof("Missing RPC id from %s", cs.ip)
-		s.policy.ApplyMalformedPolicy(cs.ip)
+		log.Infof("Missing RPC id from %s", clintSession.ip)
+		s.policy.ApplyMalformedPolicy(clintSession.ip)
 		return
 	}
 
@@ -220,72 +221,72 @@ func (cs *Session) handleMessage(s *ProxyServer, r *http.Request, req *JSONRpcRe
 
 	if !util.IsValidHexAddress(login) {
 		errReply := &ErrorReply{Code: -1, Message: "Invalid login"}
-		cs.sendError(req.Id, errReply)
+		clintSession.sendError(req.Id, errReply)
 		return
 	}
-	if !s.policy.ApplyLoginPolicy(login, cs.ip) {
+	if !s.policy.ApplyLoginPolicy(login, clintSession.ip) {
 		errReply := &ErrorReply{Code: -1, Message: "You are blacklisted"}
-		cs.sendError(req.Id, errReply)
+		clintSession.sendError(req.Id, errReply)
 		return
 	}
 
 	// Handle RPC methods
 	switch req.Method {
 	case "eth_getWork":
-		reply, errReply := s.handleGetWorkRPC(cs)
+		reply, errReply := s.handleGetWorkRPC(clintSession)
 		if errReply != nil {
-			cs.sendError(req.Id, errReply)
+			clintSession.sendError(req.Id, errReply)
 			break
 		}
-		cs.sendResult(req.Id, &reply)
+		clintSession.sendResult(req.Id, &reply)
 	case "eth_submitWork":
 		if req.Params != nil {
 			var params []string
 			err := json.Unmarshal(*req.Params, &params)
 			if err != nil {
-				log.Infof("Unable to parse params from %v", cs.ip)
-				s.policy.ApplyMalformedPolicy(cs.ip)
+				log.Infof("Unable to parse params from %v", clintSession.ip)
+				s.policy.ApplyMalformedPolicy(clintSession.ip)
 				break
 			}
-			reply, errReply := s.handleSubmitRPC(cs, login, vars["id"], params)
+			reply, errReply := s.handleSubmitRPC(clintSession, params)
 			if errReply != nil {
-				cs.sendError(req.Id, errReply)
+				clintSession.sendError(req.Id, errReply)
 				break
 			}
-			cs.sendResult(req.Id, &reply)
+			clintSession.sendResult(req.Id, &reply)
 		} else {
-			s.policy.ApplyMalformedPolicy(cs.ip)
+			s.policy.ApplyMalformedPolicy(clintSession.ip)
 			errReply := &ErrorReply{Code: -1, Message: "Malformed request"}
-			cs.sendError(req.Id, errReply)
+			clintSession.sendError(req.Id, errReply)
 		}
 	case "eth_getBlockByNumber":
 		reply := s.handleGetBlockByNumberRPC()
-		cs.sendResult(req.Id, reply)
+		clintSession.sendResult(req.Id, reply)
 	case "eth_submitHashrate":
-		cs.sendResult(req.Id, true)
+		clintSession.sendResult(req.Id, true)
 	default:
-		errReply := s.handleUnknownRPC(cs, req.Method)
-		cs.sendError(req.Id, errReply)
+		errReply := s.handleUnknownRPC(clintSession, req.Method)
+		clintSession.sendError(req.Id, errReply)
 	}
 }
 
-func (cs *Session) sendResult(id *json.RawMessage, result interface{}) error {
+func (clintSession *Session) sendResult(id *json.RawMessage, result interface{}) error {
 	message := JSONRpcResp{Id: id, Version: "2.0", Error: nil, Result: result}
-	return cs.enc.Encode(&message)
+	return clintSession.enc.Encode(&message)
 }
 
-func (cs *Session) sendError(id *json.RawMessage, reply *ErrorReply) error {
+func (clintSession *Session) sendError(id *json.RawMessage, reply *ErrorReply) error {
 	message := JSONRpcResp{Id: id, Version: "2.0", Error: reply}
-	return cs.enc.Encode(&message)
+	return clintSession.enc.Encode(&message)
 }
 
-func (s *ProxyServer) writeError(w http.ResponseWriter, status int, msg string) {
+func (proxyServer *ProxyServer) writeError(w http.ResponseWriter, status int, msg string) {
 	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 }
 
-func (s *ProxyServer) currentBlockTemplate() *BlockTemplate {
-	t := s.blockTemplate.Load()
+func (proxyServer *ProxyServer) currentBlockTemplate() *BlockTemplate {
+	t := proxyServer.blockTemplate.Load()
 	if t != nil {
 		return t.(*BlockTemplate)
 	} else {
@@ -293,18 +294,18 @@ func (s *ProxyServer) currentBlockTemplate() *BlockTemplate {
 	}
 }
 
-func (s *ProxyServer) markSick() {
-	atomic.AddInt64(&s.failsCount, 1)
+func (proxyServer *ProxyServer) markSick() {
+	atomic.AddInt64(&proxyServer.failsCount, 1)
 }
 
-func (s *ProxyServer) isSick() bool {
-	x := atomic.LoadInt64(&s.failsCount)
-	if s.config.Proxy.HealthCheck && x >= s.config.Proxy.MaxFails {
+func (proxyServer *ProxyServer) isSick() bool {
+	x := atomic.LoadInt64(&proxyServer.failsCount)
+	if proxyServer.config.Proxy.HealthCheck && x >= proxyServer.config.Proxy.MaxFails {
 		return true
 	}
 	return false
 }
 
-func (s *ProxyServer) markOk() {
-	atomic.StoreInt64(&s.failsCount, 0)
+func (proxyServer *ProxyServer) markOk() {
+	atomic.StoreInt64(&proxyServer.failsCount, 0)
 }

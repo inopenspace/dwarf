@@ -46,10 +46,10 @@ func (b Block) Nonce() uint64            { return b.nonce }
 func (b Block) MixDigest() common.Hash   { return b.mixDigest }
 func (b Block) NumberU64() uint64        { return b.number }
 
-func (s *ProxyServer) fetchBlockTemplate() {
-	rpc := s.rpc()
-	t := s.currentBlockTemplate()
-	pendingReply, height, diff, err := s.fetchPendingBlock()
+func (proxyServer *ProxyServer) fetchBlockTemplate() {
+	rpc := proxyServer.rpc()
+	t := proxyServer.currentBlockTemplate()
+	pendingReply, height, diff, err := proxyServer.fetchPendingBlock()
 	if err != nil {
 		log.Errorf("fetchBlockTemplate. Error while refreshing pending block on %s: %s", rpc.Name, err)
 		return
@@ -64,7 +64,7 @@ func (s *ProxyServer) fetchBlockTemplate() {
 		return
 	}
 
-	pendingReply.Difficulty = util.ToHex(s.config.Proxy.Difficulty)
+	pendingReply.Difficulty = util.ToHex(proxyServer.config.Proxy.Difficulty)
 
 	newTemplate := BlockTemplate{
 		Header:               reply[0],
@@ -87,17 +87,17 @@ func (s *ProxyServer) fetchBlockTemplate() {
 			}
 		}
 	}
-	s.blockTemplate.Store(&newTemplate)
+	proxyServer.blockTemplate.Store(&newTemplate)
 	log.Warnf("New block to mine on %s at height %d / %s", rpc.Name, height, reply[0][0:10])
 
 	// Stratum
-	if s.config.Proxy.Stratum.Enabled {
-		go s.broadcastNewJobs()
+	if proxyServer.config.Proxy.Stratum.Enabled {
+		go proxyServer.broadcastNewJobs()
 	}
 }
 
-func (s *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, uint64, int64, error) {
-	rpc := s.rpc()
+func (proxyServer *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, uint64, int64, error) {
+	rpc := proxyServer.rpc()
 	reply, err := rpc.GetPendingBlock()
 	if err != nil {
 		log.Errorf("fetchPendingBlock. Error while refreshing pending block on %s: %s", rpc.Name, err)

@@ -40,47 +40,45 @@
   </div>
   <div>
     <div class="container">
-      <div class="page-header">
-        <h3>How To Mine</h3>
+      <div class="panel-body in">
+
+        <p>Mining command line</p>
+        <p class="small"><code>ethminer.exe -G -F http://eth-eu.dwarfpool.com:80/YOUR_WALLET</code></p>
+        <p>You can determine your rigs separately for better statistic. Determine workername with letters and numbers</p>
+        <p class="small"><code>ethminer.exe -G -F http://eth-eu.dwarfpool.com:80/YOUR_WALLET/YOUR_WORKER</code></p>
+        <p>You can also mine <strong>direct to any exchange</strong></p>
+        <hr>
+        <p>To enable <strong>email-monitoring</strong> of your worker, use email in url. To disable monitoring, restart your miner without email.</p>
+        <p class="small"><code>ethminer.exe -G -F http://eth-eu.dwarfpool.com/YOUR_WALLET/YOUR_WORKER/EMAIL</code></p>
+        <p>and without workers</p>
+        <p class="small"><code>ethminer.exe -G -F http://eth-eu.dwarfpool.com/YOUR_WALLET/EMAIL</code></p>
+        <hr>
+        <p>Example wallet <i>0xea7263feb7d8a8ab0a11eedd8f1ce04412ab0820</i>, worker <i>rig1</i> and <i>mail@example.com</i> for monitoring</p>
+        <p class="small"><code>ethminer.exe -G -F <br>&nbsp;&nbsp;&nbsp;http://eth-eu.dwarfpool.com/0x2a65aca4...35398226/rig1/mail@example.com</code></p>
+        <hr>
+        <p>Install <strong>ethminer</strong></p>
+        <p><a href="https://ethereum.org/cli" class="btn btn-primary btn-sm">Official binary and source code</a>
+          <a href="http://cryptomining-blog.com/5417-getting-started-with-ethereum-using-cpp-ethereum/" class="btn btn-primary btn-sm">Windows</a>
+          <a href="http://spacience.blogspot.de/2015/05/ethereum-gpu-mining-ubuntu-1404-lts.html" class="btn btn-primary btn-sm">Linux</a> </p>
+        <p class="small"><strong>Do not use Catalyst 16.x!!! Drops up to 30% on hasharate or no shares at all!</strong></p>
+        <hr><a name="proxy"></a>
+        <p><b>Stratum Proxy v0.0.5</b>. Additional <strong>10%~20%</strong> increase of earning compared to standard getwork and failover option</p>
+        <p>Download <a href="https://github.com/Atrides/eth-proxy" class="btn btn-primary btn-sm">Github</a> <a href="http://dwarfpool.com/static/eth-proxy.zip" class="btn btn-primary btn-sm">Source code and/or Linux</a> <a href="http://dwarfpool.com/static/eth-proxy-win.zip" class="btn btn-primary btn-sm">Windows</a>
+        </p><p>Command line to miner start, recommended farm-recheck to use with stratum-proxy is 200</p>
+        <p class="small"><code>./ethminer --farm-recheck 200 -G -F http://127.0.0.1:8080/rig1</code></p>
+        <p>How to <a href="https://bitcointalk.org/index.php?topic=1200891">install</a></p>
+        <p>If your antivirus says exe file has virus, you use very bad antivirus. Exe file is just compiled version of python open sourceproxy.</p>
+        <hr>
+
+        <hr>
+        <p><strong>If you don't see your miner on the stats page</strong>, 99.9% that you have corrupted DAG file. You must <a href="https://forum.ethereum.org/discussion/2114/where-are-my-config-files-go-and-cpp">delete it</a> and restart ethminer.<br>If you use proxy first time, check eth-proxy.conf file and your wallet here.</p>
+        <hr>
+        <p>How to <a href="http://dwarfpool.com/faq/#maxspeed">maximize your hashrate</a></p>
+        <hr>
+        <p>Pool mining wallet <a href="https://etherchain.org/account/0x2a65aca4d5fc5b5c859090a6c34d164135398226">0x2a65aca4d5fc5b5c859090a6c34d164135398226</a></p>
+        <p>Pool donate wallet <a href="https://etherchain.org/account/0xea7263feb7d8a8ab0a11eedd8f1ce04412ab0820">0xea7263feb7d8a8ab0a11eedd8f1ce04412ab0820</a></p>
       </div>
-      <p class="lead">In order to mine on this pool you need to have an
-        <a href="https://github.com/ethereum/webthree-umbrella/releases" rel="nofollow" target="_blank">ethminer</a> installation
-        pointed to<br/><code>{{config.HttpHost}}:{{config.HttpPort}}/YOUR_ETH_ADDRESS/RIG_ID</code>
-      </p>
-      <dl class="dl-horizontal">
-        <dt>YOUR_ETH_ADDRESS</dt>
-        <dd>This is your address for payouts, generate one with geth, or mine directly to exchange like
-          <a href="http://poloniex.com" rel="nofollow" target="_blank">Poloniex</a>
-          or <a href="http://bittrex.com" rel="nofollow" target="_blank">Bittrex</a>.<br/>
-          <strong>Example:</strong> <code>0xb85150eb365e7df0941f0cf08235f987ba91506a</code>.
-        </dd>
-        <dt>RIG_ID</dt>
-        <dd>
-          ID of your farm to distinguish it from your other rig. If you have just one rig, feel free to omit this param.
-          This param must be short alphanumeric string with optional dashes and underscores.<br/>
-          <strong>Example:</strong> <code>rig-1</code>
-        </dd>
-      </dl>
-      <p>
-        <strong>Full example:</strong>
-        <code>ethminer -F {{config.HttpHost}}:{{config.HttpPort}}/0xb85150eb365e7df0941f0cf08235f987ba91506a/myfarm -G --farm-recheck 200</code>.<br/>
-        <span class="label label-info">Hint:</span> If you are compiling ethminer from latest source, please also use
-        extra <code>--disable-submit-hashrate</code> option.
-      </p>
 
-      <h4>Stratum Mining with Stratum Proxy for Ethereum</h4>
-      <p class="lead">Grab proxy from <a href="https://github.com/Atrides/eth-proxy" re="nofollow" target="_blank">eth-proxy GitHub repo</a>.</p>
-      <p class="lead">Edit <code>eth-proxy.conf</code> and specify our pool's <code>HOST: {{config.StratumHost}}</code>, <code>PORT: {{config.StratumPort}}</code> and your <code>WALLET</code>.</p>
-
-      <h4>Mining with Ether-Proxy</h4>
-      <p class="lead">Use stable release of <a href="https://github.com/vadimDidenko/ether-proxy/releases" target="_blank">Ethereum Solo/Pool Mining Proxy</a>.</p>
-
-      <h4>Advice</h4>
-      <p>CPU mining is not recommended.</p>
-      <h4>Terms of Service</h4>
-      <p>By using the pool you accept all possible risks related to experimental software usage.<br/>
-        Pool owner can't compensate any irreversible losses, but will do his best to prevent worst case.
-      </p>
     </div>
 
   </div>
