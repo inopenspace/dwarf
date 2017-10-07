@@ -222,7 +222,7 @@ func (u *PayoutsProcessor) process() {
 }
 
 func (self PayoutsProcessor) isUnlockedAccount() bool {
-	log.Errorf("Address:", self.config.Address)
+	log.Errorf("Address: %v", self.config.Address)
 	_, err := self.rpc.Sign(self.config.Address)
 	if err != nil {
 		log.Warnf("Unable to process payouts:", err)

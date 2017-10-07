@@ -10,6 +10,7 @@ export default Ember.Controller.extend({
       if (!percent) {
         return 0;
       }
+
       return percent;
     }
   }),
