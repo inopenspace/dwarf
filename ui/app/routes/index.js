@@ -1,5 +1,5 @@
 import Ember from 'ember';
-
+import config from '../config/environment';
 export default Ember.Route.extend({
   actions: {
     lookup(login) {
@@ -9,7 +9,7 @@ export default Ember.Route.extend({
     }
   },
   model: function() {
-    var url = 'https://min-api.cryptocompare.com/data/price?fsym=MUSIC&tsyms=BTC,USD';
+    var url = 'https://min-api.cryptocompare.com/data/price?fsym='+config.coinName+'&tsyms=BTC,USD';
     return Ember.$.getJSON(url).then(function(data) {
 
       return data;
