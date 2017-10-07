@@ -8,6 +8,7 @@ module.exports = function(environment) {
     locationType: 'hash',
     blockExplorerUrl:"https://orbiter.musicoin.org",
     coinName:"MUSIC",
+    applicationName:"Big Dwarf",
     EmberENV: {
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
