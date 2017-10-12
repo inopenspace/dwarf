@@ -77,8 +77,8 @@ func NewRPCClient(name, url, timeout string) *RPCClient {
 	return rpcClient
 }
 
-func (r *RPCClient) GetWork() ([]string, error) {
-	rpcResp, err := r.doPost(r.Url, "eth_getWork", []string{})
+func (rpcClient *RPCClient) GetWork() ([]string, error) {
+	rpcResp, err := rpcClient.doPost(rpcClient.Url, "eth_getWork", []string{})
 	if err != nil {
 		return nil, err
 	}
@@ -87,8 +87,8 @@ func (r *RPCClient) GetWork() ([]string, error) {
 	return reply, err
 }
 
-func (r *RPCClient) GetPendingBlock() (*GetBlockReplyPart, error) {
-	rpcResp, err := r.doPost(r.Url, "eth_getBlockByNumber", []interface{}{"pending", false})
+func (rpcClient *RPCClient) GetPendingBlock() (*GetBlockReplyPart, error) {
+	rpcResp, err := rpcClient.doPost(rpcClient.Url, "eth_getBlockByNumber", []interface{}{"pending", false})
 	if err != nil {
 		return nil, err
 	}
@@ -100,23 +100,23 @@ func (r *RPCClient) GetPendingBlock() (*GetBlockReplyPart, error) {
 	return nil, nil
 }
 
-func (r *RPCClient) GetBlockByHeight(height int64) (*GetBlockReply, error) {
+func (rpcClient *RPCClient) GetBlockByHeight(height int64) (*GetBlockReply, error) {
 	params := []interface{}{fmt.Sprintf("0x%x", height), true}
-	return r.getBlockBy("eth_getBlockByNumber", params)
+	return rpcClient.getBlockBy("eth_getBlockByNumber", params)
 }
 
-func (r *RPCClient) GetBlockByHash(hash string) (*GetBlockReply, error) {
+func (rpcClient *RPCClient) GetBlockByHash(hash string) (*GetBlockReply, error) {
 	params := []interface{}{hash, true}
-	return r.getBlockBy("eth_getBlockByHash", params)
+	return rpcClient.getBlockBy("eth_getBlockByHash", params)
 }
 
-func (r *RPCClient) GetUncleByBlockNumberAndIndex(height int64, index int) (*GetBlockReply, error) {
+func (rpcClient *RPCClient) GetUncleByBlockNumberAndIndex(height int64, index int) (*GetBlockReply, error) {
 	params := []interface{}{fmt.Sprintf("0x%x", height), fmt.Sprintf("0x%x", index)}
-	return r.getBlockBy("eth_getUncleByBlockNumberAndIndex", params)
+	return rpcClient.getBlockBy("eth_getUncleByBlockNumberAndIndex", params)
 }
 
-func (r *RPCClient) getBlockBy(method string, params []interface{}) (*GetBlockReply, error) {
-	rpcResp, err := r.doPost(r.Url, method, params)
+func (rpcClient *RPCClient) getBlockBy(method string, params []interface{}) (*GetBlockReply, error) {
+	rpcResp, err := rpcClient.doPost(rpcClient.Url, method, params)
 	if err != nil {
 		return nil, err
 	}
@@ -128,8 +128,8 @@ func (r *RPCClient) getBlockBy(method string, params []interface{}) (*GetBlockRe
 	return nil, nil
 }
 
-func (r *RPCClient) GetTxReceipt(hash string) (*TxReceipt, error) {
-	rpcResp, err := r.doPost(r.Url, "eth_getTransactionReceipt", []string{hash})
+func (rpcClient *RPCClient) GetTxReceipt(hash string) (*TxReceipt, error) {
+	rpcResp, err := rpcClient.doPost(rpcClient.Url, "eth_getTransactionReceipt", []string{hash})
 	if err != nil {
 		return nil, err
 	}
@@ -141,8 +141,8 @@ func (r *RPCClient) GetTxReceipt(hash string) (*TxReceipt, error) {
 	return nil, nil
 }
 
-func (r *RPCClient) SubmitBlock(params []string) (bool, error) {
-	rpcResp, err := r.doPost(r.Url, "eth_submitWork", params)
+func (rpcClient *RPCClient) SubmitBlock(params []string) (bool, error) {
+	rpcResp, err := rpcClient.doPost(rpcClient.Url, "eth_submitWork", params)
 	if err != nil {
 		return false, err
 	}
@@ -151,8 +151,8 @@ func (r *RPCClient) SubmitBlock(params []string) (bool, error) {
 	return reply, err
 }
 
-func (r *RPCClient) GetBalance(address string) (*big.Int, error) {
-	rpcResp, err := r.doPost(r.Url, "eth_getBalance", []string{address, "latest"})
+func (rpcClient *RPCClient) GetBalance(address string) (*big.Int, error) {
+	rpcResp, err := rpcClient.doPost(rpcClient.Url, "eth_getBalance", []string{address, "latest"})
 	if err != nil {
 		return nil, err
 	}
@@ -164,9 +164,9 @@ func (r *RPCClient) GetBalance(address string) (*big.Int, error) {
 	return util.String2Big(reply), err
 }
 
-func (r *RPCClient) Sign(from string, s string) (string, error) {
-	hash := sha256.Sum256([]byte(s))
-	rpcResp, err := r.doPost(r.Url, "eth_sign", []string{from, common.ToHex(hash[:])})
+func (rpcClient *RPCClient) Sign(from string) (string, error) {
+	hash := sha256.Sum256([]byte("0x0"))
+	rpcResp, err := rpcClient.doPost(rpcClient.Url, "eth_sign", []string{from, common.ToHex(hash[:])})
 	var reply string
 	if err != nil {
 		return reply, err
@@ -181,8 +181,8 @@ func (r *RPCClient) Sign(from string, s string) (string, error) {
 	return reply, err
 }
 
-func (r *RPCClient) GetPeerCount() (int64, error) {
-	rpcResp, err := r.doPost(r.Url, "net_peerCount", nil)
+func (rpcClient *RPCClient) GetPeerCount() (int64, error) {
+	rpcResp, err := rpcClient.doPost(rpcClient.Url, "net_peerCount", nil)
 	if err != nil {
 		return 0, err
 	}
@@ -194,7 +194,7 @@ func (r *RPCClient) GetPeerCount() (int64, error) {
 	return strconv.ParseInt(strings.Replace(reply, "0x", "", -1), 16, 64)
 }
 
-func (r *RPCClient) SendTransaction(from, to, gas, gasPrice, value string, autoGas bool) (string, error) {
+func (rpcClient *RPCClient) SendTransaction(from, to, gas, gasPrice, value string, autoGas bool) (string, error) {
 	params := map[string]string{
 		"from":  from,
 		"to":    to,
@@ -204,7 +204,7 @@ func (r *RPCClient) SendTransaction(from, to, gas, gasPrice, value string, autoG
 		params["gas"] = gas
 		params["gasPrice"] = gasPrice
 	}
-	rpcResp, err := r.doPost(r.Url, "eth_sendTransaction", []interface{}{params})
+	rpcResp, err := rpcClient.doPost(rpcClient.Url, "eth_sendTransaction", []interface{}{params})
 	var reply string
 	if err != nil {
 		return reply, err
@@ -223,7 +223,7 @@ func (r *RPCClient) SendTransaction(from, to, gas, gasPrice, value string, autoG
 	return reply, err
 }
 
-func (r *RPCClient) doPost(url string, method string, params interface{}) (*JSONRpcResp, error) {
+func (rpcClient *RPCClient) doPost(url string, method string, params interface{}) (*JSONRpcResp, error) {
 	jsonReq := map[string]interface{}{"jsonrpc": "2.0", "method": method, "params": params, "id": 0}
 	data, _ := json.Marshal(jsonReq)
 
@@ -232,9 +232,9 @@ func (r *RPCClient) doPost(url string, method string, params interface{}) (*JSON
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := r.client.Do(req)
+	resp, err := rpcClient.client.Do(req)
 	if err != nil {
-		r.markSick()
+		rpcClient.markSick()
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -242,48 +242,48 @@ func (r *RPCClient) doPost(url string, method string, params interface{}) (*JSON
 	var rpcResp *JSONRpcResp
 	err = json.NewDecoder(resp.Body).Decode(&rpcResp)
 	if err != nil {
-		r.markSick()
+		rpcClient.markSick()
 		return nil, err
 	}
 	if rpcResp.Error != nil {
-		r.markSick()
+		rpcClient.markSick()
 		return nil, errors.New(rpcResp.Error["message"].(string))
 	}
 	return rpcResp, err
 }
 
-func (r *RPCClient) Check() bool {
-	_, err := r.GetWork()
+func (rpcClient *RPCClient) Check() bool {
+	_, err := rpcClient.GetWork()
 	if err != nil {
 		return false
 	}
-	r.markAlive()
-	return !r.Sick()
+	rpcClient.markAlive()
+	return !rpcClient.Sick()
 }
 
-func (r *RPCClient) Sick() bool {
-	r.RLock()
-	defer r.RUnlock()
-	return r.sick
+func (rpcClient *RPCClient) Sick() bool {
+	rpcClient.RLock()
+	defer rpcClient.RUnlock()
+	return rpcClient.sick
 }
 
-func (r *RPCClient) markSick() {
-	r.Lock()
-	r.sickRate++
-	r.successRate = 0
-	if r.sickRate >= 5 {
-		r.sick = true
+func (rpcClient *RPCClient) markSick() {
+	rpcClient.Lock()
+	rpcClient.sickRate++
+	rpcClient.successRate = 0
+	if rpcClient.sickRate >= 5 {
+		rpcClient.sick = true
 	}
-	r.Unlock()
+	rpcClient.Unlock()
 }
 
-func (r *RPCClient) markAlive() {
-	r.Lock()
-	r.successRate++
-	if r.successRate >= 5 {
-		r.sick = false
-		r.sickRate = 0
-		r.successRate = 0
+func (rpcClient *RPCClient) markAlive() {
+	rpcClient.Lock()
+	rpcClient.successRate++
+	if rpcClient.successRate >= 5 {
+		rpcClient.sick = false
+		rpcClient.sickRate = 0
+		rpcClient.successRate = 0
 	}
-	r.Unlock()
+	rpcClient.Unlock()
 }

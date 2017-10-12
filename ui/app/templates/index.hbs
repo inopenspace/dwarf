@@ -15,6 +15,8 @@
         {{#if stats.model.stats.lastBlockFound}}
         <div><i class="fa fa-clock-o"></i> Last Block Found: <span>{{format-relative (seconds-to-ms stats.model.stats.lastBlockFound)}}</span></div>
         {{/if}}
+        <div><i class="fa fa-money"></i> <span> Pricing USD: {{model.USD}} </span> </div>
+        <div><i class="fa fa-money"></i> <span> Pricing BTC: {{model.BTC}} </span> </div>
       </div>
       <div class="col-md-4 stats">
         <div><i class="fa fa-unlock-alt"></i> Network Difficulty: <span>{{with-metric-prefix stats.difficulty}}</span></div>
@@ -39,13 +41,43 @@
     </div>
   </div>
   <div>
-    <hr/>
-    <h4 class="note note-info text-center">
-      ethminer.exe -F {{config.HttpHost}}:{{config.HttpPort}}/&lt;address&gt;/&lt;worker&gt; -G
-    </h4>
-    <strong>Claymore:</strong>
-    <h4 class="note note-info text-center">
-      ethminer.exe -F {{config.HttpHost}}:{{config.HttpPort}}/&lt;address&gt;/&lt;worker&gt; -G
-    </h4>
+    <div class="container">
+      <div class="panel-body in">
+
+        <p>Mining command line</p>
+        <p class="small"><code>ethminer.exe -G -F http://127.0.0.1:80/YOUR_WALLET</code></p>
+        <p>You can determine your rigs separately for better statistic. Determine workername with letters and numbers</p>
+        <p class="small"><code>ethminer.exe -G -F http://127.0.0.1:80/YOUR_WALLET/YOUR_WORKER</code></p>
+        <p>You can also mine <strong>direct to any exchange</strong></p>
+        <hr>
+
+        <p>Example wallet <i>0xea7263feb7d8a8ab0a11eedd8f1ce04412ab0820</i>, worker <i>rig1</i> and <i>mail@example.com</i> for monitoring</p>
+        <p class="small"><code>ethminer.exe -G -F <br>&nbsp;&nbsp;&nbsp;http://127.0.0.1/0x2a65aca4...35398226/rig1/mail@example.com</code></p>
+        <hr>
+        <p>Install <strong>ethminer</strong></p>
+        <p><a href="https://ethereum.org/cli" class="btn btn-primary btn-sm">Official binary and source code</a>
+          <a href="http://cryptomining-blog.com/5417-getting-started-with-ethereum-using-cpp-ethereum/" class="btn btn-primary btn-sm">Windows</a>
+          <a href="http://spacience.blogspot.de/2015/05/ethereum-gpu-mining-ubuntu-1404-lts.html" class="btn btn-primary btn-sm">Linux</a> </p>
+        <p class="small"><strong>Do not use Catalyst 16.x!!! Drops up to 30% on hasharate or no shares at all!</strong></p>
+        <hr><a name="proxy"></a>
+        <p><b>Stratum Proxy v0.0.5</b>. Additional <strong>10%~20%</strong> increase of earning compared to standard getwork and failover option</p>
+        <p>Download <a href="https://github.com/Atrides/eth-proxy" class="btn btn-primary btn-sm">Github</a> <a href="http://dwarfpool.com/static/eth-proxy.zip" class="btn btn-primary btn-sm">Source code and/or Linux</a> <a href="http://dwarfpool.com/static/eth-proxy-win.zip" class="btn btn-primary btn-sm">Windows</a>
+        </p><p>Command line to miner start, recommended farm-recheck to use with stratum-proxy is 200</p>
+        <p class="small"><code>./ethminer --farm-recheck 200 -G -F http://127.0.0.1:8080/rig1</code></p>
+        <p>How to <a href="https://bitcointalk.org/index.php?topic=1200891">install</a></p>
+        <p>If your antivirus says exe file has virus, you use very bad antivirus. Exe file is just compiled version of python open sourceproxy.</p>
+        <hr>
+
+        <hr>
+        <p><strong>If you don't see your miner on the stats page</strong>, 99.9% that you have corrupted DAG file. You must <a href="https://forum.ethereum.org/discussion/2114/where-are-my-config-files-go-and-cpp">delete it</a> and restart ethminer.<br>If you use proxy first time, check eth-proxy.conf file and your wallet here.</p>
+        <hr>
+        <p>How to <a href="http://dwarfpool.com/faq/#maxspeed">maximize your hashrate</a></p>
+        <hr>
+        <p>Pool mining wallet <a href="{{model.blockExplorerUrl}}/addr/0xee208da4465b41d8f1e445d392d32c9242efe8ea">0xee208da4465b41d8f1e445d392d32c9242efe8ea</a></p>
+        <p>Pool donate wallet <a href="{{model.blockExplorerUrl}}/addr/0xfff0a45335c19e12d64a845d359cf9ff430c2f2f">0xfff0a45335c19e12d64a845d359cf9ff430c2f2f</a></p>
+      </div>
+
+    </div>
+
   </div>
 </div>

@@ -6,6 +6,9 @@ module.exports = function(environment) {
     environment: environment,
     rootURL: '/',
     locationType: 'hash',
+    blockExplorerUrl:"https://orbiter.musicoin.org",
+    coinName:"MUSIC",
+    applicationName:"Big Dwarf",
     EmberENV: {
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
@@ -14,17 +17,17 @@ module.exports = function(environment) {
     },
 
     APP: {
-      ApplicationName: "Expanse",
+      ApplicationName: "Music",
       // API host and port
       ApiUrl: '//big-dwarf.com/',
 
       // HTTP mining endpoint
       HttpHost: 'http://big-dwarf.com',
-      HttpPort: 9999,
+      HttpPort: 6666,
 
       // Stratum mining endpoint
       StratumHost: 'big-dwarf.com',
-      StratumPort: 9009,
+      StratumPort: 6006,
 
       // Fee and payout details
       PoolFee: '1%',
@@ -39,7 +42,7 @@ module.exports = function(environment) {
     /* Override ApiUrl just for development, while you are customizing
       frontend markup and css theme on your workstation.
     */
-    ENV.APP.ApiUrl = 'http://big-dwarf.com:9090/';
+    ENV.APP.ApiUrl = 'http://big-dwarf.com:6060/';
     // ENV.APP.LOG_RESOLVER = true;
     // ENV.APP.LOG_ACTIVE_GENERATION = true;
     // ENV.APP.LOG_TRANSITIONS = true;

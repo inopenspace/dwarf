@@ -2,7 +2,7 @@ package policy
 
 import (
 	"fmt"
-	"log"
+	log "github.com/dmuth/google-go-log4go"
 	"os/exec"
 	"strings"
 	"sync"
@@ -78,11 +78,11 @@ func Start(cfg *Config, storage *storage.RedisClient) *PolicyServer {
 
 	resetIntv := util.MustParseDuration(s.config.ResetInterval)
 	resetTimer := time.NewTimer(resetIntv)
-	log.Printf("Set policy stats reset every %v", resetIntv)
+	log.Infof("Set policy stats reset every %v", resetIntv)
 
 	refreshIntv := util.MustParseDuration(s.config.RefreshInterval)
 	refreshTimer := time.NewTimer(refreshIntv)
-	log.Printf("Set policy state refresh every %v", refreshIntv)
+	log.Infof("Set policy state refresh every %v", refreshIntv)
 
 	go func() {
 		for {
@@ -100,7 +100,7 @@ func Start(cfg *Config, storage *storage.RedisClient) *PolicyServer {
 	for i := 0; i < s.config.Workers; i++ {
 		s.startPolicyWorker()
 	}
-	log.Printf("Running with %v policy workers", s.config.Workers)
+	log.Infof("Running with %v policy workers", s.config.Workers)
 	return s
 }
 
@@ -129,7 +129,7 @@ func (s *PolicyServer) resetStats() {
 		if now-bannedAt >= banningTimeout {
 			atomic.StoreInt64(&m.BannedAt, 0)
 			if atomic.CompareAndSwapInt32(&m.Banned, 1, 0) {
-				log.Printf("Ban dropped for %v", key)
+				log.Infof("Ban dropped for %v", key)
 				delete(s.stats, key)
 				total++
 			}
@@ -139,7 +139,7 @@ func (s *PolicyServer) resetStats() {
 			total++
 		}
 	}
-	log.Printf("Flushed stats for %v IP addresses", total)
+	log.Infof("Flushed stats for %v IP addresses", total)
 }
 
 func (s *PolicyServer) refreshState() {
@@ -149,13 +149,13 @@ func (s *PolicyServer) refreshState() {
 
 	s.blacklist, err = s.storage.GetBlacklist()
 	if err != nil {
-		log.Printf("Failed to get blacklist from backend: %v", err)
+		log.Infof("Failed to get blacklist from backend: %v", err)
 	}
 	s.whitelist, err = s.storage.GetWhitelist()
 	if err != nil {
-		log.Printf("Failed to get whitelist from backend: %v", err)
+		log.Infof("Failed to get whitelist from backend: %v", err)
 	}
-	log.Println("Policy state refresh complete")
+	log.Info("Policy state refresh complete")
 }
 
 func (s *PolicyServer) NewStats() *Stats {
@@ -267,7 +267,7 @@ func (s *PolicyServer) forceBan(x *Stats, ip string) {
 		if len(s.config.Banning.IPSet) > 0 {
 			s.banChannel <- ip
 		} else {
-			log.Println("Banned peer", ip)
+			log.Infof("Banned peer", ip)
 		}
 	}
 }
@@ -303,11 +303,11 @@ func (s *PolicyServer) doBan(ip string) {
 	head := args[0]
 	args = args[1:]
 
-	log.Printf("Banned %v with timeout %v on ipset %s", ip, timeout, set)
+	log.Infof("Banned %v with timeout %v on ipset %s", ip, timeout, set)
 
 	_, err := exec.Command(head, args...).Output()
 	if err != nil {
-		log.Printf("CMD Error: %s", err)
+		log.Infof("CMD Error: %s", err)
 	}
 }
 

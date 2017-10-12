@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	"log"
+	log "github.com/dmuth/google-go-log4go"
 	"math/big"
 	"strconv"
 	"strings"
@@ -46,17 +46,17 @@ func (b Block) Nonce() uint64            { return b.nonce }
 func (b Block) MixDigest() common.Hash   { return b.mixDigest }
 func (b Block) NumberU64() uint64        { return b.number }
 
-func (s *ProxyServer) fetchBlockTemplate() {
-	rpc := s.rpc()
-	t := s.currentBlockTemplate()
-	pendingReply, height, diff, err := s.fetchPendingBlock()
+func (proxyServer *ProxyServer) fetchBlockTemplate() {
+	rpc := proxyServer.rpc()
+	t := proxyServer.currentBlockTemplate()
+	pendingReply, height, diff, err := proxyServer.fetchPendingBlock()
 	if err != nil {
-		log.Printf("fetchBlockTemplate. Error while refreshing pending block on %s: %s", rpc.Name, err)
+		log.Errorf("fetchBlockTemplate. Error while refreshing pending block on %s: %s", rpc.Name, err)
 		return
 	}
 	reply, err := rpc.GetWork()
 	if err != nil {
-		log.Printf("Error while refreshing block template on %s: %s", rpc.Name, err)
+		log.Errorf("Error while refreshing block template on %s: %s", rpc.Name, err)
 		return
 	}
 	// No need to update, we have fresh job
@@ -64,7 +64,7 @@ func (s *ProxyServer) fetchBlockTemplate() {
 		return
 	}
 
-	pendingReply.Difficulty = util.ToHex(s.config.Proxy.Difficulty)
+	pendingReply.Difficulty = util.ToHex(proxyServer.config.Proxy.Difficulty)
 
 	newTemplate := BlockTemplate{
 		Header:               reply[0],
@@ -87,30 +87,30 @@ func (s *ProxyServer) fetchBlockTemplate() {
 			}
 		}
 	}
-	s.blockTemplate.Store(&newTemplate)
-	log.Printf("New block to mine on %s at height %d / %s", rpc.Name, height, reply[0][0:10])
+	proxyServer.blockTemplate.Store(&newTemplate)
+	log.Warnf("New block to mine on %s at height %d / %s", rpc.Name, height, reply[0][0:10])
 
 	// Stratum
-	if s.config.Proxy.Stratum.Enabled {
-		go s.broadcastNewJobs()
+	if proxyServer.config.Proxy.Stratum.Enabled {
+		go proxyServer.broadcastNewJobs()
 	}
 }
 
-func (s *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, uint64, int64, error) {
-	rpc := s.rpc()
+func (proxyServer *ProxyServer) fetchPendingBlock() (*rpc.GetBlockReplyPart, uint64, int64, error) {
+	rpc := proxyServer.rpc()
 	reply, err := rpc.GetPendingBlock()
 	if err != nil {
-		log.Printf("fetchPendingBlock. Error while refreshing pending block on %s: %s", rpc.Name, err)
+		log.Errorf("fetchPendingBlock. Error while refreshing pending block on %s: %s", rpc.Name, err)
 		return nil, 0, 0, err
 	}
 	blockNumber, err := strconv.ParseUint(strings.Replace(reply.Number, "0x", "", -1), 16, 64)
 	if err != nil {
-		log.Println("Can't parse pending block number")
+		log.Error("Can't parse pending block number")
 		return nil, 0, 0, err
 	}
 	blockDiff, err := strconv.ParseInt(strings.Replace(reply.Difficulty, "0x", "", -1), 16, 64)
 	if err != nil {
-		log.Println("Can't parse pending block difficulty")
+		log.Error("Can't parse pending block difficulty")
 		return nil, 0, 0, err
 	}
 	return reply, blockNumber, blockDiff, nil

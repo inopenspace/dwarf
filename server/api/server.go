@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/dmuth/google-go-log4go"
 	"net/http"
 	"sort"
 	"strings"
@@ -60,18 +60,18 @@ func NewApiServer(cfg *ApiConfig, backend *storage.RedisClient) *ApiServer {
 
 func (s *ApiServer) Start() {
 	if s.config.PurgeOnly {
-		log.Printf("Starting API in purge-only mode")
+		log.Infof("Starting API in purge-only mode")
 	} else {
-		log.Printf("Starting API on %v", s.config.Listen)
+		log.Infof("Starting API on %v", s.config.Listen)
 	}
 
 	s.statsIntv = util.MustParseDuration(s.config.StatsCollectInterval)
 	statsTimer := time.NewTimer(s.statsIntv)
-	log.Printf("Set stats collect interval to %v", s.statsIntv)
+	log.Infof("Set stats collect interval to %v", s.statsIntv)
 
 	purgeIntv := util.MustParseDuration(s.config.PurgeInterval)
 	purgeTimer := time.NewTimer(purgeIntv)
-	log.Printf("Set purge interval to %v", purgeIntv)
+	log.Infof("Set purge interval to %v", purgeIntv)
 
 	sort.Ints(s.config.LuckWindow)
 
@@ -113,7 +113,7 @@ func (s *ApiServer) listen() {
 	r.NotFoundHandler = http.HandlerFunc(notFound)
 	err := http.ListenAndServe(s.config.Listen, r)
 	if err != nil {
-		log.Fatalf("Failed to start API: %v", err)
+		log.Errorf("Failed to start API: %v", err)
 	}
 }
 
@@ -128,9 +128,9 @@ func (s *ApiServer) purgeStale() {
 	start := time.Now()
 	total, err := s.backend.FlushStaleStats(s.hashrateWindow, s.hashrateLargeWindow)
 	if err != nil {
-		log.Println("Failed to purge stale data from backend:", err)
+		log.Errorf("Failed to purge stale data from backend:", err)
 	} else {
-		log.Printf("Purged stale stats from backend, %v shares affected, elapsed time %v", total, time.Since(start))
+		log.Infof("Purged stale stats from backend, %v shares affected, elapsed time %v", total, time.Since(start))
 	}
 }
 
@@ -138,18 +138,18 @@ func (s *ApiServer) collectStats() {
 	start := time.Now()
 	stats, err := s.backend.CollectStats(s.hashrateWindow, s.config.Blocks, s.config.Payments)
 	if err != nil {
-		log.Printf("Failed to fetch stats from backend: %v", err)
+		log.Errorf("Failed to fetch stats from backend: %v", err)
 		return
 	}
 	if len(s.config.LuckWindow) > 0 {
 		stats["luck"], err = s.backend.CollectLuckStats(s.config.LuckWindow)
 		if err != nil {
-			log.Printf("Failed to fetch luck stats from backend: %v", err)
+			log.Errorf("Failed to fetch luck stats from backend: %v", err)
 			return
 		}
 	}
 	s.stats.Store(stats)
-	log.Printf("Stats collection finished %s", time.Since(start))
+	log.Infof("Stats collection finished %s", time.Since(start))
 }
 
 func (s *ApiServer) StatsIndex(w http.ResponseWriter, r *http.Request) {
@@ -161,7 +161,7 @@ func (s *ApiServer) StatsIndex(w http.ResponseWriter, r *http.Request) {
 	reply := make(map[string]interface{})
 	nodes, err := s.backend.GetNodeStates()
 	if err != nil {
-		log.Printf("Failed to get nodes stats from backend: %v", err)
+		log.Infof("Failed to get nodes stats from backend: %v", err)
 	}
 	reply["nodes"] = nodes
 
@@ -178,7 +178,7 @@ func (s *ApiServer) StatsIndex(w http.ResponseWriter, r *http.Request) {
 
 	err = json.NewEncoder(w).Encode(reply)
 	if err != nil {
-		log.Println("Error serializing API response: ", err)
+		log.Errorf("Error serializing API response: ", err)
 	}
 }
 
@@ -199,7 +199,7 @@ func (s *ApiServer) MinersIndex(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewEncoder(w).Encode(reply)
 	if err != nil {
-		log.Println("Error serializing API response: ", err)
+		log.Errorf("Error serializing API response: ", err)
 	}
 }
 
@@ -223,7 +223,7 @@ func (s *ApiServer) BlocksIndex(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewEncoder(w).Encode(reply)
 	if err != nil {
-		log.Println("Error serializing API response: ", err)
+		log.Errorf("Error serializing API response: ", err)
 	}
 }
 
@@ -242,7 +242,7 @@ func (s *ApiServer) PaymentsIndex(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewEncoder(w).Encode(reply)
 	if err != nil {
-		log.Println("Error serializing API response: ", err)
+		log.Errorf("Error serializing API response: ", err)
 	}
 }
 func (s *ApiServer) ConfigIndex(w http.ResponseWriter, r *http.Request) {
@@ -259,7 +259,7 @@ func (s *ApiServer) ConfigIndex(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewEncoder(w).Encode(reply)
 	if err != nil {
-		log.Println("Error serializing API response: ", err)
+		log.Errorf("Error serializing API response: ", err)
 	}
 }
 
@@ -284,20 +284,20 @@ func (s *ApiServer) AccountIndex(w http.ResponseWriter, r *http.Request) {
 		}
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Failed to fetch stats from backend: %v", err)
+			log.Infof("Failed to fetch stats from backend: %v", err)
 			return
 		}
 
 		stats, err := s.backend.GetMinerStats(login, s.config.Payments)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Failed to fetch stats from backend: %v", err)
+			log.Infof("Failed to fetch stats from backend: %v", err)
 			return
 		}
 		workers, err := s.backend.CollectWorkersStats(s.hashrateWindow, s.hashrateLargeWindow, login)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Printf("Failed to fetch stats from backend: %v", err)
+			log.Infof("Failed to fetch stats from backend: %v", err)
 			return
 		}
 		for key, value := range workers {
@@ -311,7 +311,7 @@ func (s *ApiServer) AccountIndex(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(w).Encode(reply.stats)
 	if err != nil {
-		log.Println("Error serializing API response: ", err)
+		log.Errorf("Error serializing API response: ", err)
 	}
 }
 

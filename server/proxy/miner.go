@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	"log"
+	log "github.com/dmuth/google-go-log4go"
 	"math/big"
 	"strconv"
 	"strings"
@@ -12,16 +12,16 @@ import (
 
 var hasher = ethash.New()
 
-func (s *ProxyServer) processShare(login, id, ip string, t *BlockTemplate, params []string) (bool, bool) {
+func (proxyServer *ProxyServer) processShare(login, id, ip string, t *BlockTemplate, params []string) (bool, bool) {
 	nonceHex := params[0]
 	hashNoNonce := params[1]
 	mixDigest := params[2]
 	nonce, _ := strconv.ParseUint(strings.Replace(nonceHex, "0x", "", -1), 16, 64)
-	shareDiff := s.config.Proxy.Difficulty
+	shareDiff := proxyServer.config.Proxy.Difficulty
 
 	h, ok := t.headers[hashNoNonce]
 	if !ok {
-		log.Printf("Stale share from %v@%v", login, ip)
+		log.Infof("Stale share from %v@%v", login, ip)
 		return false, false
 	}
 
@@ -46,32 +46,32 @@ func (s *ProxyServer) processShare(login, id, ip string, t *BlockTemplate, param
 	}
 
 	if hasher.Verify(block) {
-		ok, err := s.rpc().SubmitBlock(params)
+		ok, err := proxyServer.rpc().SubmitBlock(params)
 		if err != nil {
-			log.Printf("Block submission failure at height %v for %v: %v", h.height, t.Header, err)
+			log.Infof("Block submission failure at height %v for %v: %v", h.height, t.Header, err)
 		} else if !ok {
-			log.Printf("Block rejected at height %v for %v", h.height, t.Header)
+			log.Errorf("Block rejected at height %v for %v", h.height, t.Header)
 			return false, false
 		} else {
-			s.fetchBlockTemplate()
-			exist, err := s.backend.WriteBlock(login, id, params, shareDiff, h.diff.Int64(), h.height, s.hashrateExpiration)
+			proxyServer.fetchBlockTemplate()
+			exist, err := proxyServer.backend.WriteBlock(login, id, params, shareDiff, h.diff.Int64(), h.height, proxyServer.hashrateExpiration)
 			if exist {
 				return true, false
 			}
 			if err != nil {
-				log.Println("Failed to insert block candidate into backend:", err)
+				log.Errorf("Failed to insert block candidate into backend:", err)
 			} else {
-				log.Printf("Inserted block %v to backend", h.height)
+				log.Infof("Inserted block %v to backend", h.height)
 			}
-			log.Printf("Block found by miner %v@%v at height %d", login, ip, h.height)
+			log.Infof("Block found by miner %v@%v at height %d", login, ip, h.height)
 		}
 	} else {
-		exist, err := s.backend.WriteShare(login, id, params, shareDiff, h.height, s.hashrateExpiration)
+		exist, err := proxyServer.backend.WriteShare(login, id, params, shareDiff, h.height, proxyServer.hashrateExpiration)
 		if exist {
 			return true, false
 		}
 		if err != nil {
-			log.Println("Failed to insert share data into backend:", err)
+			log.Errorf("Failed to insert share data into backend:", err)
 		}
 	}
 	return false, true
