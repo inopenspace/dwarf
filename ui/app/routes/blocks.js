@@ -25,8 +25,7 @@ export default Ember.Route.extend({
 				});
 			}
       data.config=config;
-			data.BlockExplorerAddress=config.APP.BlockExplorerAddress;
-      console.log(JSON.stringify(data));
+			data.BlockExplorerAddress=config.APP.BlockExplorerAddress;     
 			return data;
     });
 	},
