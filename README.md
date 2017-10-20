@@ -38,7 +38,7 @@ First install  [go-ethereum](https://github.com/ethereum/go-ethereum/wiki/Instal
 
 Clone & compile:
     
-    git clone https://vdidenko@bitbucket.org/vdidenko/dwarf.git
+    git clone https://github.com/inopenspace/dwarf.git
     cd /dwarf/server
     go build
 
