@@ -4,11 +4,11 @@ import config from '../config/environment';
 export default Ember.Route.extend({
   model: function (params) {
     let url = config.APP.ApiUrl + 'api/accounts/' + params.login;
-    return Ember.$.getJSON(url).then(function (data) {
+    let promise= Ember.$.getJSON(url).then(function (data) {
       data.login = params.login;
       data.config = config;
       let url = 'https://min-api.cryptocompare.com/data/price?fsym='+config.coinName+'&tsyms=BTC,USD';
-      return Ember.$.getJSON(url).then(function (pricingResponse) {
+      let statPromise=Ember.$.getJSON(url).then(function (pricingResponse) {
         data.price = {
           btc: pricingResponse.BTC,
           usd: pricingResponse.USD
@@ -29,7 +29,13 @@ export default Ember.Route.extend({
 
         return Ember.Object.create(data);
       });
+      return statPromise.catch(function (error){
+        console.log("Request error:"+error.statusText);
+      });
 
+    });
+    return promise.catch(function (error){
+      console.log("Request error:"+error.statusText);
     });
   },
 
