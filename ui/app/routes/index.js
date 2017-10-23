@@ -11,7 +11,7 @@ export default Ember.Route.extend({
     }
   },
   model: function () {
-    var url = 'https://min-api.cryptocompare.com/data/price?fsym=' + config.coinName + '&tsyms=BTC,USD';
+    var url = 'https://min-api.cryptocompare.com/data/price?fsym=' + config.APP.coinName + '&tsyms=BTC,USD';
     return Ember.$.getJSON(url).then(function (data) {
       data.blockExplorerUrl = config.blockExplorerUrl;
 

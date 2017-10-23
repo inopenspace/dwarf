@@ -7,8 +7,8 @@ export default Ember.Route.extend({
     let promise= Ember.$.getJSON(url).then(function (data) {
       data.login = params.login;
       data.config = config;
-      let url = 'https://min-api.cryptocompare.com/data/price?fsym='+config.coinName+'&tsyms=BTC,USD';
-      let statPromise=Ember.$.getJSON(url).then(function (pricingResponse) {
+      let url = 'https://min-api.cryptocompare.com/data/price?fsym='+config.APP.coinName+'&tsyms=BTC,USD';
+      let statPromise= Ember.$.getJSON(url).then(function (pricingResponse) {
         data.price = {
           btc: pricingResponse.BTC,
           usd: pricingResponse.USD

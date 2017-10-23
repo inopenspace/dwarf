@@ -9,10 +9,10 @@ export default Ember.Route.extend({
   },
 
 	model: function() {
-    var url = config.APP.ApiUrl + 'api/stats';
+    let url = config.APP.ApiUrl + 'api/stats';
     let promise=Ember.$.getJSON(url).then(function(data) {
-      data.coinName=config.coinName;
-      data.applicationName=config.applicationName;
+      data.coinName=config.APP.coinName;
+      data.applicationName=config.APP.projectName;
       return Ember.Object.create(data);
     });
     return promise.catch(function (error){
