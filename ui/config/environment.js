@@ -6,7 +6,9 @@ module.exports = function(environment) {
     environment: environment,
     rootURL: '/',
     locationType: 'hash',
-
+    blockExplorerUrl:"https://orbiter.musicoin.org",
+    coinName:"MUSIC",
+    applicationName:"Big Dwarf",
     EmberENV: {
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
@@ -15,10 +17,7 @@ module.exports = function(environment) {
     },
 
     APP: {
-      blockExplorerUrl:"https://orbiter.musicoin.org",
-      coinName:"MUSIC",
-      projectName:"Big Dwarf",
-      displayedApplicationName: "Music",
+      ApplicationName: "Music",
       // API host and port
       ApiUrl: '//big-dwarf.com/',
 

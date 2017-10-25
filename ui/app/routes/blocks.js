@@ -7,7 +7,7 @@ export default Ember.Route.extend({
 
 	model: function() {
     var url = config.APP.ApiUrl + 'api/blocks';
-    let promise=Ember.$.getJSON(url).then(function(data) {
+    return Ember.$.getJSON(url).then(function(data) {
 			if (data.candidates) {
 				data.candidates = data.candidates.map(function(b) {
 					return Block.create(b);
@@ -26,10 +26,8 @@ export default Ember.Route.extend({
 			}
       data.config=config;
 			data.BlockExplorerAddress=config.APP.BlockExplorerAddress;
+      console.log(JSON.stringify(data));
 			return data;
-    });
-    return promise.catch(function (error){
-      console.log("Request error:"+error.statusText);
     });
 	},
 
