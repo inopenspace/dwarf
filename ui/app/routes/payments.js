@@ -5,7 +5,7 @@ export default Ember.Route.extend({
 
 	model: function() {
     var url = config.APP.ApiUrl + 'api/payments';
-    let promise=Ember.$.getJSON(url).then(function(data) {
+    return Ember.$.getJSON(url).then(function(data) {
 			if (data.payments) {
 				data.payments = data.payments.map(function(p) {
 					return Payment.create(p);
@@ -13,9 +13,6 @@ export default Ember.Route.extend({
         data.config = config;
 			}
 			return data;
-    });
-    return promise.catch(function (error){
-      console.log("Request error:"+error.statusText);
     });
 	},
 

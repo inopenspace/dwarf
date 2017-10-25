@@ -4,7 +4,7 @@ import config from '../config/environment';
 export default Ember.Route.extend({
   model: function() {
     var url = config.APP.ApiUrl + 'api/miners';
-    let promise=Ember.$.getJSON(url).then(function(data) {
+    return Ember.$.getJSON(url).then(function(data) {
       if (data.miners) {
         // Convert map to array
         data.miners = Object.keys(data.miners).map((value) => {
@@ -24,9 +24,6 @@ export default Ember.Route.extend({
         });
       }
       return data;
-    });
-    return promise.catch(function (error){
-      console.log("Request error:"+error.statusText);
     });
   },
 
