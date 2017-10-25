@@ -15,6 +15,7 @@ export default Ember.Route.extend({
         };
         data.totalPaidBtc = data.stats.paid * data.price.btc;
         data.totalPaidUsd = data.stats.paid * data.price.usd;
+        data.todayCoinsCount=0;
         let total = 0;
         let yestoday = new Date(Date.now() - 86400 * 1000).getTime();
         data.payments.forEach(function (payment) {
@@ -26,7 +27,7 @@ export default Ember.Route.extend({
         });
         data.paidTodayBtc=total* data.price.btc;
         data.paidTodayUsd=total* data.price.usd;
-
+        data.todayCoinsCount=total;
         return Ember.Object.create(data);
       });
 

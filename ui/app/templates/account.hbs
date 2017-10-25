@@ -18,9 +18,12 @@
         {{/if}}
         <div style="display: block;"><i class="fa fa-money"></i>Today Paid BTC: <span>{{format-balance model.paidTodayBtc}}</span></div>
         <div style="display: block;"><i class="fa fa-money"></i>Today Paid USD: <span>{{format-balance model.paidTodayUsd}}</span></div>
+        <div style="display: block;"><i class="fa fa-money"></i>Today coins: <span>{{format-balance model.todayCoinsCount}}</span></div>
+        <br>
         <div style="display: block;"><i class="fa fa-money"></i>Total Paid: <span>{{format-balance model.stats.paid}}</span></div>
         <div style="display: block;"><i class="fa fa-money"></i>Total Paid BTC: <span>{{format-balance model.totalPaidBtc}}</span></div>
         <div style="display: block;"><i class="fa fa-money"></i>Total Paid USD: <span>{{format-balance model.totalPaidUsd}}</span></div>
+
       </div>
       <div class="col-md-4 stats">
         {{#if model.stats.lastShare}}
