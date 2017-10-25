@@ -6,6 +6,15 @@
       Usually it's less indeed.
     </strong>
   </div>
+  <br>
+  <div class="container">
+    <strong>Last 24 hours found:</strong>
+    <div class="container">
+      Blocks: <span class="badge alert-success"> {{model.todayFoundBlocksCount}}</span>
+      <br>
+      Coins: <span class="badge alert-success"> {{model.todayCoinsCount}}</span>
+    </div>
+  </div>
 </div>
 <div class="container">
   {{#if model.luck}}
