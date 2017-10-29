@@ -7,7 +7,16 @@ export default Ember.Route.extend({
   beforeModel() {
     this.get('intl').setLocale('en-us');
   },
+  actions: {
+    error: function(error) {
+      this.send('ajaxError', error);
+    },
 
+    ajaxError: function(error) {
+      this.ajaxError(error);
+      Ember.run.later(this, this.refresh, 5000);
+    },
+  },
 	model: function() {
     var url = config.APP.ApiUrl + 'api/stats';
     return Ember.$.getJSON(url).then(function(data) {
