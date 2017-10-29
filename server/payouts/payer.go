@@ -10,9 +10,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
-	"bitbucket.org/vdidenko/dwarf/server/rpc"
-	"bitbucket.org/vdidenko/dwarf/server/storage"
-	"bitbucket.org/vdidenko/dwarf/server/util"
+	"github.com/inopenspace/dwarf/server/rpc"
+	"github.com/inopenspace/dwarf/server/storage"
+	"github.com/inopenspace/dwarf/server/util"
 )
 
 const txCheckInterval = 5 * time.Second

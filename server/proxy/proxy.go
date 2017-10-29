@@ -13,10 +13,10 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"bitbucket.org/vdidenko/dwarf/server/policy"
-	"bitbucket.org/vdidenko/dwarf/server/rpc"
-	"bitbucket.org/vdidenko/dwarf/server/storage"
-	"bitbucket.org/vdidenko/dwarf/server/util"
+	"github.com/inopenspace/dwarf/server/policy"
+	"github.com/inopenspace/dwarf/server/rpc"
+	"github.com/inopenspace/dwarf/server/storage"
+	"github.com/inopenspace/dwarf/server/util"
 )
 
 type ProxyServer struct {

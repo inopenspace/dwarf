@@ -13,10 +13,10 @@ import (
 
     log "github.com/dmuth/google-go-log4go"
 
-	"bitbucket.org/vdidenko/dwarf/server/api"
-	"bitbucket.org/vdidenko/dwarf/server/payouts"
-	"bitbucket.org/vdidenko/dwarf/server/proxy"
-	"bitbucket.org/vdidenko/dwarf/server/storage"
+	"github.com/inopenspace/dwarf/server/api"
+	"github.com/inopenspace/dwarf/server/payouts"
+	"github.com/inopenspace/dwarf/server/proxy"
+	"github.com/inopenspace/dwarf/server/storage"
 )
 
 var cfg proxy.Config

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"bitbucket.org/vdidenko/dwarf/server/rpc"
-	"bitbucket.org/vdidenko/dwarf/server/util"
+	"github.com/inopenspace/dwarf/server/rpc"
+	"github.com/inopenspace/dwarf/server/util"
 )
 
 // Allow only lowercase hexadecimal with 0x prefix

@@ -9,8 +9,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"bitbucket.org/vdidenko/dwarf/server/rpc"
-	"bitbucket.org/vdidenko/dwarf/server/util"
+	"github.com/inopenspace/dwarf/server/rpc"
+	"github.com/inopenspace/dwarf/server/util"
 )
 
 const maxBacklog = 3

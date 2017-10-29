@@ -9,7 +9,7 @@ import (
 	"net"
 	"time"
 
-	"bitbucket.org/vdidenko/dwarf/server/util"
+	"github.com/inopenspace/dwarf/server/util"
 )
 
 const (
@@ -104,6 +104,18 @@ func (proxyServer *ProxyServer) handleTCPClient(cs *Session) error {
 func (clintSession *Session) handleTCPMessage(proxyServer *ProxyServer, request *StratumReq) error {
 	// Handle RPC methods
 	switch request.Method {
+	case "mining.subscribe":
+		var params []string
+		err := json.Unmarshal(*request.Params, &params)
+		if err != nil {
+			log.Infof("Malformed stratum request params from", clintSession.ip)
+			return err
+		}
+		reply, errReply := proxyServer.handleLoginRPC(clintSession, params, request.Worker)
+		if errReply != nil {
+			return clintSession.sendTCPError(request.Id, errReply)
+		}
+		return clintSession.sendTCPResult(request.Id, reply)
 	case "eth_submitLogin":
 		var params []string
 		err := json.Unmarshal(*request.Params, &params)

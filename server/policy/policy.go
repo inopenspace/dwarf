@@ -9,8 +9,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"bitbucket.org/vdidenko/dwarf/server/storage"
-	"bitbucket.org/vdidenko/dwarf/server/util"
+	"github.com/inopenspace/dwarf/server/storage"
+	"github.com/inopenspace/dwarf/server/util"
 )
 
 type Config struct {
